@@ -1,0 +1,228 @@
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 5013 tries to guess the password.
+
+The password was: 
+The program took 0.0 seconds to complete.
+This program took 0 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 4722 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 1789 tries to guess the password.
+
+The password was: HEy
+The program took 0.125 seconds to complete.
+This program took 360165 tries to guess the password.
+
+The password was: Hey
+The program took 0.171 seconds to complete.
+This program took 625551 tries to guess the password.
+
+The password was: Why
+The program took 0.124 seconds to complete.
+This program took 428876 tries to guess the password.
+
+The password was: H
+The program took 0.0 seconds to complete.
+This program took 99 tries to guess the password.
+
+The password was: Hey
+The program took 0.203 seconds to complete.
+This program took 765761 tries to guess the password.
+
+The password was: Ryan
+The program took 32.449 seconds to complete.
+This program took 127164958 tries to guess the password.
+
+The password was: Matt
+The program took 22.901 seconds to complete.
+This program took 65998721 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 751 tries to guess the password.
+
+The password was: Hey
+The program took 0.032 seconds to complete.
+This program took 37924 tries to guess the password.
+
+The password was: Hey
+The program took 0.031 seconds to complete.
+This program took 65213 tries to guess the password.
+
+The password was: Hey
+The program took 0.39 seconds to complete.
+This program took 1685224 tries to guess the password.
+
+The password was: Hey
+The program took 0.405 seconds to complete.
+This program took 1651262 tries to guess the password.
+
+The password was: Hey
+The program took 0.343 seconds to complete.
+This program took 1513619 tries to guess the password.
+
+The password was: Hey
+The program took 0.25 seconds to complete.
+This program took 958312 tries to guess the password.
+
+The password was: Hey
+The program took 0.109 seconds to complete.
+This program took 380497 tries to guess the password.
+
+The password was: Hey
+The program took 0.375 seconds to complete.
+This program took 1695500 tries to guess the password.
+
+The password was: Hi
+The program took 0.016 seconds to complete.
+This program took 6258 tries to guess the password.
+
+The password was: Hi
+The program took 0.016 seconds to complete.
+This program took 8126 tries to guess the password.
+
+The password was: Hi
+The program took 0.016 seconds to complete.
+This program took 10047 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 5357 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 3040 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 3044 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 22102 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 13035 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 3000 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 10110 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 2354 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 18939 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 4942 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 1459 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 244 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 1755 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 15601 tries to guess the password.
+
+The password was: Heyo
+The program took 69.125 seconds to complete.
+This program took 258992616 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 1968 tries to guess the password.
+
+The password was: Hi
+The program took 0.016 seconds to complete.
+This program took 7480 tries to guess the password.
+
+The password was: Hi
+The program took 0.0 seconds to complete.
+This program took 1048 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 7373 tries to guess the password.
+
+The password was: Ryan
+The program took 10.374 seconds to complete.
+This program took 38629551 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 5216 tries to guess the password.
+
+The password was: HI0
+The program took 0.156 seconds to complete.
+This program took 480929 tries to guess the password.
+
+The password was: £££
+The program took 0.156 seconds to complete.
+This program took 673471 tries to guess the password.
+
+The password was:   
+The program took 0.0 seconds to complete.
+This program took 3571 tries to guess the password.
+
+The password was:    
+The program took 0.219 seconds to complete.
+This program took 953824 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 7259 tries to guess the password.
+
+The password was: You
+The program took 0.063 seconds to complete.
+This program took 130821 tries to guess the password.
+
+The password was: Suk
+The program took 0.094 seconds to complete.
+This program took 258539 tries to guess the password.
+
+The password was: Hey
+The program took 0.249 seconds to complete.
+This program took 1107417 tries to guess the password.
+
+The password was: Hell
+The program took 22.994 seconds to complete.
+This program took 84894656 tries to guess the password.
+
+The password was: H
+The program took 0.0 seconds to complete.
+This program took 25 tries to guess the password.
+
+The password was: Why
+The program took 0.156 seconds to complete.
+This program took 586502 tries to guess the password.
+
+The password was: Hi
+The program took 0.015 seconds to complete.
+This program took 13314 tries to guess the password.
+
+The password was: Dud
+The program took 0.359 seconds to complete.
+This program took 1640436 tries to guess the password.
+
