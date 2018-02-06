@@ -6,7 +6,10 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
-
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import java.util.Scanner; 
+import java.io.*;
 public class PhoneBookWindow {
 	private static Text text;
 	private static Text txtForename;
@@ -17,7 +20,18 @@ public class PhoneBookWindow {
 	 * Launch the application.
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		PhoneBook phoneBook = new PhoneBook();
+		String name = "";
+		String pNum = "";
+		String searchName = "";
+		int contactNumber = 1;
+		int contactEdit = 0;
+		int exceptionTrip = 0;
+		int arrayReached = 0;
+		int wholeTrip = 0;
+		File phoneBookFile = new File ("Phonebook.txt");
+		
 		Display display = Display.getDefault();
 		Shell shlPhonebook = new Shell();
 		shlPhonebook.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -30,7 +44,23 @@ public class PhoneBookWindow {
 		lblOutputPlace.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.NORMAL));
 		lblOutputPlace.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		lblOutputPlace.setBounds(414, 10, 310, 442);
-		lblOutputPlace.setText("Contacts imported sucessfully!\r\nOR\r\nAdd your contact details to the boxes on the left and click 'Submit' etc");
+		
+		boolean exists = phoneBookFile.exists();
+		if (!(exists))
+		{
+			PrintWriter output = new PrintWriter ("Phonebook.txt");
+			/*System.out.println("This program can create, edit, and store a phonebook.");
+			System.out.println();
+			System.out.println("Enter \"add\" to add a new contact.");
+			System.out.println("Enter \"display\" to display a contact.");
+			System.out.println("Enter \"change\" edit a contact.");
+			System.out.println("Enter \"all\" to view all contacts.");
+			System.out.println();*/
+			lblOutputPlace.setText("This program can create, edit, and store a phone book");
+		}
+		else	{
+			lblOutputPlace.setText("Phone book imported sucessfully!");
+		}
 		
 		Button btnAddContact = new Button(shlPhonebook, SWT.NONE);
 		btnAddContact.setText("Add Contact");
@@ -41,6 +71,12 @@ public class PhoneBookWindow {
 		btnRemoveContact.setBounds(154, 354, 95, 25);
 		
 		Button btnDisplayAll = new Button(shlPhonebook, SWT.NONE);
+		btnDisplayAll.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+				//Display All Here
+			}
+		});
 		btnDisplayAll.setText("Display All");
 		btnDisplayAll.setBounds(313, 354, 95, 25);
 		
