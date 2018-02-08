@@ -29,8 +29,7 @@ public class PhoneBook {
 		return phoneBook[arrayNumber].displayNumber();
 	}
 	String displayAll()	{
-		for (int contactCount = 1; contactCount < contactNumber; contactCount++)
-		{
+		for (int contactCount = 1; contactCount < contactNumber; contactCount++)	{
 			returnString += "\n";
 			returnString += "Contact: \n";
 			returnString += (phoneBook[contactCount].displayContactNumber());

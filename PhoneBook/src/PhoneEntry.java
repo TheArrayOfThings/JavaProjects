@@ -1,24 +1,22 @@
 public class PhoneEntry {
-	String Name;
+	String FName;
+	String SName;
 	String PNumber;
 	int ContactNumber;
 	
-	PhoneEntry(String namePara, String numPara, int contactNumPara)
-	{
-		Name = namePara;
+	PhoneEntry(String FNamePara, String SNamePara, String numPara, int contactNumPara)	{
+		FName = FNamePara;
+		SName = SNamePara;
 		PNumber = numPara;
 		ContactNumber = contactNumPara;
 	}
-	int displayContactNumber()
-	{
+	int displayContactNumber()	{
 		return ContactNumber;
 	}
-	String displayName()
-	{
-		return Name.trim();
+	String displayName()	{
+		return (FName + " " + SName).trim();
 	}
-	String displayNumber()
-	{
+	String displayNumber()	{
 		return PNumber.trim();
 	}
 }

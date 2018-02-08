@@ -12,15 +12,23 @@ public class Handler {
 	int exceptionTrip = 0;
 	int arrayReached = 0;
 	int wholeTrip = 0;
-	String name = "";
+	String FName = "";
+	String SName = "";
 	String pNum = "";
+	Label outputLabel;
 	public static File phoneBookFile = new File ("Phonebook.txt");
-	void addNew(String namePara, String numPara)	{
-		name = namePara;
-		pNum = numPara;
-		//Stuff goes here
+	Handler (Label labelPara)	{
+		outputLabel = labelPara;
 	}
-	void initialise(Label labelPara) throws FileNotFoundException	{
+	void addNew(String FNamePara, String SNamePara, String numPara)	{
+		FName = FNamePara;
+		SName = SNamePara;
+		pNum = numPara;
+		PhoneEntry entry = new PhoneEntry(FName, SName, pNum, contactNumber);
+		phoneBook.addContact(entry);
+		contactNumber++;
+	}
+	void initialise() throws FileNotFoundException	{
 		boolean exists = phoneBookFile.exists();
 		if (!(exists))
 		{
@@ -32,18 +40,22 @@ public class Handler {
 			System.out.println("Enter \"change\" edit a contact.");
 			System.out.println("Enter \"all\" to view all contacts.");
 			System.out.println();*/
-			labelPara.setText("This program can create, edit, and store a phone book");
+			outputLabel.setText("This program can create, edit, and store a phone book");
 		}
 		else	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
-			labelPara.setText("Phone book importing...");
+			outputLabel.setText("Phone book importing...");
 			while (bookScanner.hasNext())	{
 				if (bookScanner.hasNextInt())	{
 					contactNumber = bookScanner.nextInt();
 				}
 				if (bookScanner.hasNextLine())	{
 					bookScanner.nextLine();
-					name = bookScanner.nextLine();
+					FName = bookScanner.nextLine();
+				}
+				if (bookScanner.hasNextLine())	{
+					bookScanner.nextLine();
+					SName = bookScanner.nextLine();
 				}
 				if (bookScanner.hasNextLine())	{
 					pNum = bookScanner.nextLine();
@@ -51,12 +63,12 @@ public class Handler {
 				if (bookScanner.hasNext())	{
 					bookScanner.next();
 				}
-				PhoneEntry entry = new PhoneEntry(name, pNum, contactNumber);
+				PhoneEntry entry = new PhoneEntry(FName, SName, pNum, contactNumber);
 				phoneBook.addContact(entry);
 				contactNumber++;
 			}
 			bookScanner.close();
-			labelPara.setText("Phone book imported successfully!");
+			outputLabel.setText("Phone book imported successfully!");
 		}
 	}
 }
