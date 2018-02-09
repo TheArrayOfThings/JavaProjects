@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Scanner;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 public class Handler {
 	PhoneBook phoneBook = new PhoneBook();
@@ -17,13 +18,20 @@ public class Handler {
 	String pNum = "";
 	Label outputLabel;
 	public static File phoneBookFile = new File ("Phonebook.txt");
-	Handler (Label labelPara)	{
-		outputLabel = labelPara;
+	Handler (Label outputLabelPara)	{
+		outputLabel = outputLabelPara;
 	}
-	void addNew(String FNamePara, String SNamePara, String numPara)	{
+	void setCurrent(String FNamePara, String SNamePara, String NumPara)	{
 		FName = FNamePara;
 		SName = SNamePara;
-		pNum = numPara;
+		pNum = NumPara;
+	}
+	void retreiveContact(Integer contactPara)	{
+		//FNameText.setText(phoneBook.displayFName(contactPara));
+		//SNameText.setText(phoneBook.displaySName(contactPara));
+		//NumText.setText(phoneBook.displayNumber(contactPara));
+	}
+	void addNew()	{
 		PhoneEntry entry = new PhoneEntry(FName, SName, pNum, contactNumber);
 		phoneBook.addContact(entry);
 		contactNumber++;

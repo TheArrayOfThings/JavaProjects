@@ -20,9 +20,17 @@ public class PhoneBook {
 		arrayNumber = arrayContactNumber;
 		return phoneBook[arrayNumber].displayContactNumber();
 	}
-	String displayName(int arrayNumName)	{
+	String displayFullName(int arrayNumName)	{
 		arrayNumber = arrayNumName;
-		return phoneBook[arrayNumber].displayName();
+		return phoneBook[arrayNumber].displayFullName();
+	}
+	String displayFName(int arrayNum)	{
+		arrayNumber = arrayNum;
+		return phoneBook[arrayNumber].displayFName();
+	}
+	String displaySName(int arrayNum)	{
+		arrayNumber = arrayNum;
+		return phoneBook[arrayNumber].displaySName();
 	}
 	String displayNumber(int arrayNum)	{
 		arrayNumber = arrayNum;
@@ -34,11 +42,8 @@ public class PhoneBook {
 			returnString += "Contact: \n";
 			returnString += (phoneBook[contactCount].displayContactNumber());
 			returnString += "\n";
-			returnString += (phoneBook[contactCount].displayName());
+			returnString += (phoneBook[contactCount].displayFullName());
 			returnString += "\n";
-			returnString += "Mobile: ";
-			returnString += "\n";
-			returnString += (phoneBook[contactCount].displayNumber());
 		}
 		return returnString;
 	}
@@ -46,7 +51,7 @@ public class PhoneBook {
 		searchContactNumber = 1;
 		searchName = searchNamePara;
 		while ((!(searchName.equals(currentName))) && (searchContactNumber < contactNumber))	{
-			currentName = phoneBook[searchContactNumber].displayName().trim().toLowerCase();
+			currentName = phoneBook[searchContactNumber].displayFullName().trim().toLowerCase();
 			searchContactNumber++;
 		}
 		searchContactNumber--;

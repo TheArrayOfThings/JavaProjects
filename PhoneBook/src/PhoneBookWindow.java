@@ -13,7 +13,7 @@ import java.io.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 public class PhoneBookWindow {
-	private static Text text;
+	private static Text textContact;
 	private static Text txtForename;
 	private static Text txtSurname;
 	private static Text txtNumber;
@@ -35,7 +35,7 @@ public class PhoneBookWindow {
 		lblOutputPlace.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblOutputPlace.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.NORMAL));
 		lblOutputPlace.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-		lblOutputPlace.setBounds(414, 10, 310, 442);
+		lblOutputPlace.setBounds(414, 10, 310, 447);
 		//Main stuff starts here
 		Handler mainHandle = new Handler(lblOutputPlace);
 		mainHandle.initialise(); //Initial import/setup
@@ -44,7 +44,8 @@ public class PhoneBookWindow {
 		btnAddContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.addNew(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				mainHandle.addNew();
 			}
 		});
 		btnAddContact.setText("Add Contact");
@@ -64,20 +65,20 @@ public class PhoneBookWindow {
 		btnDisplayAll.setText("Display All");
 		btnDisplayAll.setBounds(313, 354, 95, 25);
 		
-		text = new Text(shlPhonebook, SWT.BORDER);
-		text.setText("1");
-		text.setBounds(111, 12, 26, 21);
+		textContact = new Text(shlPhonebook, SWT.BORDER);
+		textContact.setText("1");
+		textContact.setBounds(111, 12, 26, 21);
 		
 		txtForename = new Text(shlPhonebook, SWT.BORDER);
-		txtForename.setText("Forename");
+		txtForename.setText("Ryan");
 		txtForename.setBounds(111, 77, 182, 21);
 		
 		txtSurname = new Text(shlPhonebook, SWT.BORDER);
-		txtSurname.setText("Surname");
+		txtSurname.setText("Flanagan");
 		txtSurname.setBounds(111, 123, 182, 21);
 		
 		txtNumber = new Text(shlPhonebook, SWT.BORDER);
-		txtNumber.setText("Number");
+		txtNumber.setText("07447937347");
 		txtNumber.setBounds(111, 169, 182, 21);
 		
 		Button btnSubmit = new Button(shlPhonebook, SWT.NONE);
@@ -92,7 +93,8 @@ public class PhoneBookWindow {
 		btnSubmit.setText("Submit");
 		
 		Label lblNotAValid = new Label(shlPhonebook, SWT.NONE);
-		lblNotAValid.setBounds(154, 15, 254, 21);
+		lblNotAValid.setEnabled(false);
+		lblNotAValid.setBounds(10, 39, 254, 21);
 		lblNotAValid.setText("Not a valid contact!");
 		
 		Label lblContactNumber = new Label(shlPhonebook, SWT.NONE);
@@ -110,6 +112,16 @@ public class PhoneBookWindow {
 		Label lblNumber = new Label(shlPhonebook, SWT.NONE);
 		lblNumber.setText("Number");
 		lblNumber.setBounds(10, 169, 95, 23);
+		
+		Button btnRetreiveContact = new Button(shlPhonebook, SWT.NONE);
+		btnRetreiveContact.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+				mainHandle.retreiveContact(Integer.getInteger((textContact.getText())));
+			}
+		});
+		btnRetreiveContact.setBounds(154, 10, 106, 25);
+		btnRetreiveContact.setText("Retreive Contact");
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();

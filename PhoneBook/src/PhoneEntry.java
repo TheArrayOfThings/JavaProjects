@@ -13,8 +13,14 @@ public class PhoneEntry {
 	int displayContactNumber()	{
 		return ContactNumber;
 	}
-	String displayName()	{
+	String displayFullName()	{
 		return (FName + " " + SName).trim();
+	}
+	String displayFName()	{
+		return FName.trim();
+	}
+	String displaySName()	{
+		return SName.trim();
 	}
 	String displayNumber()	{
 		return PNumber.trim();
