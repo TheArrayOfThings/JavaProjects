@@ -44,7 +44,7 @@ public class PhoneBookWindow {
 		Button btnAddContact = new Button(shlPhonebook, SWT.NONE);
 		btnAddContact.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseUp(MouseEvent e) {
+			public void mouseUp(MouseEvent e)	{
 				mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
 				mainHandle.addNew();
 			}
@@ -60,7 +60,7 @@ public class PhoneBookWindow {
 		btnDisplayAll.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				lblOutputPlace.setText(mainHandle.displayAll());
+				mainHandle.displayAll();
 			}
 		});
 		btnDisplayAll.setText("Display All");
