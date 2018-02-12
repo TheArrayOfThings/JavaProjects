@@ -6,40 +6,80 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class Handler {
-	PhoneBook phoneBook = new PhoneBook();
 	String searchName = "";
-	int contactNumber = 1;
+	int contactNumber = 0;
 	int contactEdit = 0;
 	int exceptionTrip = 0;
 	int arrayReached = 0;
 	int wholeTrip = 0;
+	int retreiveContact = 0;
 	String FName = "";
 	String SName = "";
 	String pNum = "";
 	Label outputLabel;
-	public static File phoneBookFile = new File ("Phonebook.txt");
+	String currentName;
+	int editContactNumber = 1;
+	int arrayNumber = 0;
+	int searchContactNumber = 1;
+	String returnString = "";
+	String[] retreiveArray = new String[3];
+	PhoneEntry[] phoneBook = new PhoneEntry[1000];
+	File phoneBookFile = new File ("Phonebook.txt");
 	Handler (Label outputLabelPara)	{
 		outputLabel = outputLabelPara;
+	}
+	void editContact(PhoneEntry editEntryPara, int editContactPara)	{
+		editContactNumber = editContactPara;
+		phoneBook[editContactNumber] = editEntryPara;
+	}
+	String displayAll()	{
+		returnString = "";
+		for (int contactCount = 0; contactCount < contactNumber; contactCount++)	{
+			returnString += "Contact: \n";
+			returnString += (phoneBook[contactCount].displayContactNumber());
+			returnString += "\n";
+			returnString += (phoneBook[contactCount].displayFullName());
+			returnString += "\n \n";
+		}
+		return returnString;
+	}
+	int searchName(String searchNamePara)	{
+		searchContactNumber = 1;
+		searchName = searchNamePara;
+		while ((!(searchName.equals(currentName))) && (searchContactNumber < contactNumber))	{
+			currentName = phoneBook[searchContactNumber].displayFullName().trim().toLowerCase();
+			searchContactNumber++;
+		}
+		searchContactNumber--;
+		if (currentName.equals(searchName))	{
+			currentName = null; 
+			return searchContactNumber;
+		}
+		else	{
+			currentName = null; 
+			return searchContactNumber + 1;
+		}
 	}
 	void setCurrent(String FNamePara, String SNamePara, String NumPara)	{
 		FName = FNamePara;
 		SName = SNamePara;
 		pNum = NumPara;
 	}
-	void retreiveContact(Integer contactPara)	{
-		//FNameText.setText(phoneBook.displayFName(contactPara));
-		//SNameText.setText(phoneBook.displaySName(contactPara));
-		//NumText.setText(phoneBook.displayNumber(contactPara));
+	String[] retreiveContact(Integer contactPara)	{
+		retreiveContact = contactPara;
+		retreiveArray[0] = phoneBook[retreiveContact].displayFName();
+		retreiveArray[1] = phoneBook[retreiveContact].displaySName();
+		retreiveArray[2] = phoneBook[retreiveContact].displayNumber();
+		return retreiveArray;
 	}
 	void addNew()	{
 		PhoneEntry entry = new PhoneEntry(FName, SName, pNum, contactNumber);
-		phoneBook.addContact(entry);
+		phoneBook[contactNumber] = entry;
 		contactNumber++;
 	}
 	void initialise() throws FileNotFoundException	{
 		boolean exists = phoneBookFile.exists();
-		if (!(exists))
-		{
+		if (!(exists))	{
 			PrintWriter output = new PrintWriter ("Phonebook.txt");
 			/*System.out.println("This program can create, edit, and store a phonebook.");
 			System.out.println();
@@ -54,26 +94,16 @@ public class Handler {
 			Scanner bookScanner = new Scanner (phoneBookFile);
 			outputLabel.setText("Phone book importing...");
 			while (bookScanner.hasNext())	{
-				if (bookScanner.hasNextInt())	{
-					contactNumber = bookScanner.nextInt();
-				}
 				if (bookScanner.hasNextLine())	{
-					bookScanner.nextLine();
 					FName = bookScanner.nextLine();
 				}
 				if (bookScanner.hasNextLine())	{
-					bookScanner.nextLine();
 					SName = bookScanner.nextLine();
 				}
 				if (bookScanner.hasNextLine())	{
 					pNum = bookScanner.nextLine();
 				}
-				if (bookScanner.hasNext())	{
-					bookScanner.next();
-				}
-				PhoneEntry entry = new PhoneEntry(FName, SName, pNum, contactNumber);
-				phoneBook.addContact(entry);
-				contactNumber++;
+				this.addNew();
 			}
 			bookScanner.close();
 			outputLabel.setText("Phone book imported successfully!");

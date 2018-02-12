@@ -37,6 +37,7 @@ public class PhoneBookWindow {
 		lblOutputPlace.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		lblOutputPlace.setBounds(414, 10, 310, 447);
 		//Main stuff starts here
+		
 		Handler mainHandle = new Handler(lblOutputPlace);
 		mainHandle.initialise(); //Initial import/setup
 		
@@ -59,7 +60,7 @@ public class PhoneBookWindow {
 		btnDisplayAll.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				lblOutputPlace.setText(mainHandle.phoneBook.displayAll());
+				lblOutputPlace.setText(mainHandle.displayAll());
 			}
 		});
 		btnDisplayAll.setText("Display All");
@@ -93,9 +94,7 @@ public class PhoneBookWindow {
 		btnSubmit.setText("Submit");
 		
 		Label lblNotAValid = new Label(shlPhonebook, SWT.NONE);
-		lblNotAValid.setEnabled(false);
 		lblNotAValid.setBounds(10, 39, 254, 21);
-		lblNotAValid.setText("Not a valid contact!");
 		
 		Label lblContactNumber = new Label(shlPhonebook, SWT.NONE);
 		lblContactNumber.setBounds(10, 15, 95, 23);
@@ -117,7 +116,15 @@ public class PhoneBookWindow {
 		btnRetreiveContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.retreiveContact(Integer.getInteger((textContact.getText())));
+				try	{
+					String[] retreiveArray = mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
+					txtForename.setText(retreiveArray[0]);
+					txtSurname.setText(retreiveArray[1]);
+					txtNumber.setText(retreiveArray[2]);
+					lblNotAValid.setText("");
+				} catch (Exception outOfBounds)	{
+					lblNotAValid.setText("Not a valid contact!");
+				}
 			}
 		});
 		btnRetreiveContact.setBounds(154, 10, 106, 25);
