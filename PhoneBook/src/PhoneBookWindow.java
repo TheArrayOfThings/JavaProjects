@@ -23,7 +23,6 @@ public class PhoneBookWindow {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-
 		Display display = Display.getDefault();
 		Shell shlPhonebook = new Shell();
 		shlPhonebook.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -67,26 +66,27 @@ public class PhoneBookWindow {
 		btnDisplayAll.setBounds(313, 354, 95, 25);
 		
 		textContact = new Text(shlPhonebook, SWT.BORDER);
-		textContact.setText("1");
+		textContact.setText("");
 		textContact.setBounds(111, 12, 26, 21);
 		
 		txtForename = new Text(shlPhonebook, SWT.BORDER);
-		txtForename.setText("Ryan");
+		txtForename.setText("");
 		txtForename.setBounds(111, 77, 182, 21);
 		
 		txtSurname = new Text(shlPhonebook, SWT.BORDER);
-		txtSurname.setText("Flanagan");
+		txtSurname.setText("");
 		txtSurname.setBounds(111, 123, 182, 21);
 		
 		txtNumber = new Text(shlPhonebook, SWT.BORDER);
-		txtNumber.setText("07447937347");
+		txtNumber.setText("");
 		txtNumber.setBounds(111, 169, 182, 21);
 		
 		Button btnSubmit = new Button(shlPhonebook, SWT.NONE);
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				//mainHandle.???
+				PhoneEntry editEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText(), Integer.parseInt(textContact.getText()));
+				mainHandle.editContact(editEntry);
 			}
 		});
 		btnSubmit.setToolTipText("This will store any changes you've made to the contact.");

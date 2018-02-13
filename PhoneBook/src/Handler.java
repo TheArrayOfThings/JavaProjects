@@ -9,7 +9,6 @@ public class Handler {
 	String searchName = "";
 	int contactNumber = 1;
 	int retreiveContact = 0;
-	int intComplete = 0;
 	String FName = "";
 	String SName = "";
 	String PNum = "";
@@ -30,7 +29,6 @@ public class Handler {
 		if (!(exists))	{
 			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file
 			output.close(); //close it as not used here.
-			intComplete = 1; //Used to denote than import is complete (prevents duplication of imported contacts. 
 			outputLabel.setText("This appears to be your first time running the programme..");
 		}	else	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
@@ -45,16 +43,16 @@ public class Handler {
 				if (bookScanner.hasNextLine())	{
 					PNum = bookScanner.nextLine();
 				}
-				this.addNew();
+				this.addNewEntry();
 			}
-			intComplete = 1; 
 			bookScanner.close();
 			outputLabel.setText("Phone book imported successfully!");
 		}
 	}
-	void editContact(PhoneEntry editEntryPara, int editContactPara)	{
-		editContactNumber = editContactPara;
+	void editContact(PhoneEntry editEntryPara)	{
+		editContactNumber = editEntryPara.displayContactNumber();
 		phoneBook[editContactNumber] = editEntryPara;
+		this.printNew();
 	}
 	void displayAll()	{
 		returnString = "";
@@ -97,22 +95,25 @@ public class Handler {
 		return retreiveArray;
 	}
 	void printNew()	{
-		if (intComplete == 1)	{
-			try	{
-				output = new PrintWriter(new FileWriter("PhoneBook.txt", true));
-				output.println(FName);
-				output.println(SName);
-				output.println(PNum);
-				output.close();
-			}	catch (Exception missing) {
-				outputLabel.setText("Error in addNew(): " + missing);
+		try	{
+			output = new PrintWriter("PhoneBook.txt");
+			for (int contactNum = 1; contactNum < contactNumber; contactNum++)	{
+				output.println(phoneBook[contactNum].displayFName());
+				output.println(phoneBook[contactNum].displaySName());
+				output.println(phoneBook[contactNum].displayNumber());
 			}
+			output.close();
+		}	catch (Exception missing) {
+			outputLabel.setText("Error in addNew(): " + missing);
 		}
 	}
-	void addNew()	{
+	private void addNewEntry()	{ //used by Handler.
 		PhoneEntry entry = new PhoneEntry(FName, SName, PNum, contactNumber);
 		phoneBook[contactNumber] = entry;
-		this.printNew();
 		contactNumber++;
+	}
+	public void addNew()	{ //used by main programme. 
+		this.addNewEntry();
+		this.printNew();
 	}
 }
