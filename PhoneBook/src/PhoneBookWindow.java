@@ -46,12 +46,19 @@ public class PhoneBookWindow {
 			public void mouseUp(MouseEvent e)	{
 				mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
 				mainHandle.addNew();
+				textContact.setText(Integer.toString((mainHandle.returnLast())));
 			}
 		});
 		btnAddContact.setText("Add Contact");
 		btnAddContact.setBounds(10, 354, 95, 25);
 		
 		Button btnRemoveContact = new Button(shlPhonebook, SWT.NONE);
+		btnRemoveContact.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+				mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
+			}
+		});
 		btnRemoveContact.setText("Remove Contact");
 		btnRemoveContact.setBounds(154, 354, 95, 25);
 		
@@ -85,8 +92,8 @@ public class PhoneBookWindow {
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				PhoneEntry editEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText(), Integer.parseInt(textContact.getText()));
-				mainHandle.editContact(editEntry);
+				PhoneEntry editEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				mainHandle.editContact(editEntry, Integer.parseInt(textContact.getText()));
 			}
 		});
 		btnSubmit.setToolTipText("This will store any changes you've made to the contact.");
@@ -129,6 +136,20 @@ public class PhoneBookWindow {
 		});
 		btnRetreiveContact.setBounds(154, 10, 106, 25);
 		btnRetreiveContact.setText("Retreive Contact");
+		
+		Button btnClear = new Button(shlPhonebook, SWT.NONE);
+		btnClear.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+				textContact.setText("");
+				txtForename.setText("");
+				txtSurname.setText("");
+				txtNumber.setText("");
+			}
+		});
+		btnClear.setToolTipText("This will store any changes you've made to the contact.");
+		btnClear.setText("Clear");
+		btnClear.setBounds(198, 212, 95, 25);
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();

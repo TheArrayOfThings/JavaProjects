@@ -4,14 +4,10 @@ public class PhoneEntry {
 	String PNumber;
 	int ContactNumber;
 	
-	PhoneEntry(String FNamePara, String SNamePara, String numPara, int contactNumPara)	{
+	PhoneEntry(String FNamePara, String SNamePara, String numPara)	{
 		FName = FNamePara;
 		SName = SNamePara;
 		PNumber = numPara;
-		ContactNumber = contactNumPara;
-	}
-	int displayContactNumber()	{
-		return ContactNumber;
 	}
 	String displayFullName()	{
 		return (FName + " " + SName).trim();
