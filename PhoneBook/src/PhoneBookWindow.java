@@ -44,9 +44,25 @@ public class PhoneBookWindow {
 		btnAddContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e)	{
-				mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
-				mainHandle.addNew();
-				textContact.setText(Integer.toString((mainHandle.returnLast())));
+				PhoneEntry searchEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				if (txtForename.getText().equals(""))	{ //checks for blank surname
+					lblOutputPlace.setText("Please enter a Forename");
+				}
+				else if (txtSurname.getText().equals(""))	{ //checks for blank surname
+					lblOutputPlace.setText("Please enter a Surname");
+				}
+				else if (txtNumber.getText().equals(""))	{ //checks for blank number
+					lblOutputPlace.setText("Please enter a phone number");
+				}
+				else if (mainHandle.search(searchEntry))	{
+					lblOutputPlace.setText("Contact already found!");
+				}
+				else	{
+					mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+					mainHandle.addNew();
+					lblOutputPlace.setText("Contact added sucessfully!");
+					textContact.setText(Integer.toString((mainHandle.returnLast())));
+				}
 			}
 		});
 		btnAddContact.setText("Add Contact");
@@ -57,6 +73,10 @@ public class PhoneBookWindow {
 			@Override
 			public void mouseUp(MouseEvent e) {
 				mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
+				textContact.setText("");
+				txtForename.setText("");
+				txtSurname.setText("");
+				txtNumber.setText("");
 			}
 		});
 		btnRemoveContact.setText("Remove Contact");
@@ -150,6 +170,17 @@ public class PhoneBookWindow {
 		btnClear.setToolTipText("This will store any changes you've made to the contact.");
 		btnClear.setText("Clear");
 		btnClear.setBounds(198, 212, 95, 25);
+		
+		Button btnDebug = new Button(shlPhonebook, SWT.NONE);
+		btnDebug.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseUp(MouseEvent e) {
+				lblOutputPlace.setText(Integer.toString((mainHandle.contactNumber)));
+			}
+		});
+		btnDebug.setToolTipText("This will store any changes you've made to the contact.");
+		btnDebug.setText("Debug");
+		btnDebug.setBounds(111, 276, 95, 25);
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();

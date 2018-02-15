@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
@@ -66,14 +65,14 @@ public class Handler {
 	void deleteEntry(int entryDelPara)	{
 		phoneBook[entryDelPara] = null;
 		PhoneEntry[] tempPhoneBook = new PhoneEntry[1000];
+		int tempBookCount = 1;
 		for (int i = 1; i < contactNumber; i++)	{
-			int tempBookCount = 1;
 			if (phoneBook[i] != null) {
 				tempPhoneBook[tempBookCount] = phoneBook[i];
 				tempBookCount++;
 			}
 		}
-		contactNumber--;
+		contactNumber = contactNumber - 1;
 		phoneBook = tempPhoneBook;
 		this.printNew();
 	}
@@ -95,17 +94,17 @@ public class Handler {
 			output = new PrintWriter("PhoneBook.txt");
 			debug = 0;
 			for (int contactNum = 1; contactNum < contactNumber; contactNum++)	{
-				debug = 1;
+				debug++;
 				output.println(phoneBook[contactNum].displayFName());
-				debug = 2;
+				debug++;
 				output.println(phoneBook[contactNum].displaySName());
-				debug = 3;
+				debug++;
 				output.println(phoneBook[contactNum].displayNumber());
-				debug = 4;
+				debug++;
 			}
 			output.close();
 		}	catch (Exception missing) {
-			outputLabel.setText("Error in addNew(): " + debug);
+			outputLabel.setText("Error in printNew(): " + debug);
 		}
 	}
 	public int returnLast()	{
@@ -119,5 +118,17 @@ public class Handler {
 	public void addNew()	{ //used by main programme. 
 		this.addNewEntry();
 		this.printNew();
+	}
+	Boolean search(PhoneEntry searchEntryPara)	{
+		PhoneEntry searchEntry = searchEntryPara;
+		Boolean found = false;
+		for (int i = 1; i < contactNumber; i++) {
+			if (searchEntry.displayFName().toUpperCase().equals(phoneBook[i].displayFName().toUpperCase())
+				&& searchEntry.displaySName().toUpperCase().equals(phoneBook[i].displaySName().toUpperCase())
+				&& searchEntry.displayNumber().toUpperCase().equals(phoneBook[i].displayNumber().toUpperCase()))	{
+				found = true;
+			}
+		}
+		return found;
 	}
 }

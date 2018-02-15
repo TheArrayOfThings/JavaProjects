@@ -5,9 +5,9 @@ public class PhoneEntry {
 	int ContactNumber;
 	
 	PhoneEntry(String FNamePara, String SNamePara, String numPara)	{
-		FName = FNamePara;
-		SName = SNamePara;
-		PNumber = numPara;
+		FName = FNamePara.trim();
+		SName = SNamePara.trim();
+		PNumber = numPara.trim();
 	}
 	String displayFullName()	{
 		return (FName + " " + SName).trim();
