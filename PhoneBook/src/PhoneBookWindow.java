@@ -12,12 +12,13 @@ import java.util.Scanner;
 import java.io.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import java.lang.NumberFormatException;
 public class PhoneBookWindow {
 	private static Text textContact;
 	private static Text txtForename;
 	private static Text txtSurname;
 	private static Text txtNumber;
-
+	private static PhoneEntry tempEntry;
 	/**
 	 * Launch the application.
 	 * @param args
@@ -44,24 +45,17 @@ public class PhoneBookWindow {
 		btnAddContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e)	{
-				PhoneEntry searchEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
-				if (txtForename.getText().equals(""))	{ //checks for blank surname
-					lblOutputPlace.setText("Please enter a Forename");
-				}
-				else if (txtSurname.getText().equals(""))	{ //checks for blank surname
-					lblOutputPlace.setText("Please enter a Surname");
-				}
-				else if (txtNumber.getText().equals(""))	{ //checks for blank number
-					lblOutputPlace.setText("Please enter a phone number");
-				}
-				else if (mainHandle.search(searchEntry))	{
-					lblOutputPlace.setText("Contact already found!");
-				}
-				else	{
-					mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
-					mainHandle.addNew();
-					lblOutputPlace.setText("Contact added sucessfully!");
-					textContact.setText(Integer.toString((mainHandle.returnLast())));
+				tempEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				if (!(mainHandle.hasBlank(tempEntry)))	{
+					if (mainHandle.search(tempEntry))	{
+						lblOutputPlace.setText("Contact already found!");
+					}
+					else	{
+						mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+						mainHandle.addNew();
+						lblOutputPlace.setText("Contact added sucessfully!");
+						textContact.setText(Integer.toString((mainHandle.returnLast())));
+					}
 				}
 			}
 		});
@@ -72,11 +66,15 @@ public class PhoneBookWindow {
 		btnRemoveContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
-				textContact.setText("");
-				txtForename.setText("");
-				txtSurname.setText("");
-				txtNumber.setText("");
+				try	{
+					mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
+					textContact.setText("");
+					txtForename.setText("");
+					txtSurname.setText("");
+					txtNumber.setText("");
+				}	catch (NumberFormatException blankDelete)	{
+					lblOutputPlace.setText("Please retreive a contact to remove!");
+				}
 			}
 		});
 		btnRemoveContact.setText("Remove Contact");
@@ -112,8 +110,21 @@ public class PhoneBookWindow {
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				PhoneEntry editEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
-				mainHandle.editContact(editEntry, Integer.parseInt(textContact.getText()));
+				tempEntry = new PhoneEntry(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
+				if (!(mainHandle.hasBlank(tempEntry)))	{
+					try	{
+						if (mainHandle.search(tempEntry))	{
+							lblOutputPlace.setText("No change detected!");
+						}
+						else	{
+							mainHandle.editContact(tempEntry, Integer.parseInt(textContact.getText()));
+							lblOutputPlace.setText("Changes submitted successfully!");
+						}
+					}
+					catch (NumberFormatException blankInt)	{
+						lblOutputPlace.setText("Please retreive a contact before submitting changes.");
+					}
+				}
 			}
 		});
 		btnSubmit.setToolTipText("This will store any changes you've made to the contact.");

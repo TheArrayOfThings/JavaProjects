@@ -5,15 +5,12 @@ import java.util.Scanner;
 import org.eclipse.swt.widgets.Label;
 
 public class Handler {
-	String searchName = "";
 	int contactNumber = 1;
 	int retreiveContact = 0;
 	String FName = "";
 	String SName = "";
 	String PNum = "";
 	Label outputLabel;
-	String currentName;
-	int searchContactNumber = 1;
 	String returnString = "";
 	String[] retreiveArray = new String[3];
 	PhoneEntry[] phoneBook = new PhoneEntry[1000];
@@ -45,6 +42,23 @@ public class Handler {
 			}
 			bookScanner.close();
 			outputLabel.setText("Phone book imported successfully!");
+		}
+	}
+	Boolean hasBlank(PhoneEntry checkEntry)	{
+		if (checkEntry.displayFName().equals(""))	{ //checks for blank surname
+			outputLabel.setText("Please enter a Forename");
+			return true;
+		}
+		else if (checkEntry.displaySName().equals(""))	{ //checks for blank surname
+			outputLabel.setText("Please enter a Surname");
+			return true;
+		}
+		else if (checkEntry.displayNumber().equals(""))	{ //checks for blank number
+			outputLabel.setText("Please enter a phone number");
+			return true;
+		}
+		else	{
+			return false;
 		}
 	}
 	void editContact(PhoneEntry editEntryPara, int contactNumPara)	{
