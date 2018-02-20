@@ -13,7 +13,7 @@ public class Handler {
 	Label outputLabel;
 	String returnString = "";
 	String[] retreiveArray = new String[3];
-	PhoneEntry[] phoneBook = new PhoneEntry[1000];
+	PhoneEntry[] phoneBook = new PhoneEntry[2];
 	File phoneBookFile = new File ("Phonebook.txt");
 	boolean exists = phoneBookFile.exists();
 	PrintWriter output;
@@ -27,25 +27,25 @@ public class Handler {
 			outputLabel.setText("This appears to be your first time running the programme..");
 		}	else	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
-			outputLabel.setText("Phone book importing...");
+			outputLabel.setText("Phone book importing..."); //This is never seen, as it happens too quickly.
 			while (bookScanner.hasNext())	{
-				if (bookScanner.hasNextLine())	{
+				if (bookScanner.hasNextLine())	{ //first line should always be the first person's forename. 
 					FName = bookScanner.nextLine();
 				}
-				if (bookScanner.hasNextLine())	{
+				if (bookScanner.hasNextLine())	{ //Ect Ect. 
 					SName = bookScanner.nextLine();
 				}
 				if (bookScanner.hasNextLine())	{
 					PNum = bookScanner.nextLine();
 				}
-				this.addNewEntry();
+				this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
 			}
-			bookScanner.close();
-			outputLabel.setText("Phone book imported successfully!");
+			bookScanner.close(); //Only time we ever need bookScanner. 
+			outputLabel.setText("Phone book imported successfully!"); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
 		}
 	}
 	Boolean hasBlank(PhoneEntry checkEntry)	{
-		if (checkEntry.displayFName().equals(""))	{ //checks for blank surname
+		if (checkEntry.displayFName().equals(""))	{ //checks for blank forename
 			outputLabel.setText("Please enter a Forename");
 			return true;
 		}
@@ -65,7 +65,7 @@ public class Handler {
 		phoneBook[contactNumPara] = editEntryPara;
 		this.printNew();
 	}
-	void displayAll()	{ //Displays everything to my output window
+	String displayAll()	{ //Displays everything to the output window
 		returnString = "";
 		for (int contactCount = 1; contactCount < contactNumber; contactCount++)	{
 			returnString += "Contact: \n";
@@ -74,47 +74,51 @@ public class Handler {
 			returnString += (phoneBook[contactCount].displayFullName());
 			returnString += "\n \n";
 		}
-		outputLabel.setText(returnString);
+		return returnString;
+	}
+	void doublePB()	{
+		PhoneEntry[] tempPhoneBook = new PhoneEntry[contactNumber*2];
+		for (int i = 1; i < contactNumber; i++)	{
+			tempPhoneBook[i] = phoneBook[i];
+		}
+		phoneBook = tempPhoneBook;
 	}
 	void deleteEntry(int entryDelPara)	{
-		phoneBook[entryDelPara] = null;
-		PhoneEntry[] tempPhoneBook = new PhoneEntry[1000];
-		int tempBookCount = 1;
-		for (int i = 1; i < contactNumber; i++)	{
-			if (phoneBook[i] != null) {
-				tempPhoneBook[tempBookCount] = phoneBook[i];
-				tempBookCount++;
+		if (!(entryDelPara == 0))	{
+			phoneBook[entryDelPara] = null;
+			PhoneEntry[] tempPhoneBook = new PhoneEntry[1000];
+			int tempBookCount = 1;
+			for (int i = 1; i < contactNumber; i++)	{
+				if (phoneBook[i] != null) {
+					tempPhoneBook[tempBookCount] = phoneBook[i];
+					tempBookCount++;
+				}
 			}
+			contactNumber = contactNumber - 1;
+			phoneBook = tempPhoneBook;
+			this.printNew();
 		}
-		contactNumber = contactNumber - 1;
-		phoneBook = tempPhoneBook;
-		this.printNew();
 	}
 	void setCurrent(String FNamePara, String SNamePara, String NumPara)	{
 		FName = FNamePara;
 		SName = SNamePara;
 		PNum = NumPara;
 	}
-	String[] retreiveContact(Integer contactPara)	{
-		retreiveContact = contactPara;
-		retreiveArray[0] = phoneBook[retreiveContact].displayFName();
-		retreiveArray[1] = phoneBook[retreiveContact].displaySName();
-		retreiveArray[2] = phoneBook[retreiveContact].displayNumber();
-		return retreiveArray;
+	PhoneEntry retreiveContact(Integer contactPara)	{
+		return phoneBook[contactPara];
 	}
 	void printNew()	{
-		int debug = 0;
+		String debug = "'PhoneBook.txt' PrintWriter failed to open! Why? We don't know!";
 		try	{
 			output = new PrintWriter("PhoneBook.txt");
-			debug = 0;
 			for (int contactNum = 1; contactNum < contactNumber; contactNum++)	{
-				debug++;
+				debug = "Displaying first name failed...";
 				output.println(phoneBook[contactNum].displayFName());
-				debug++;
+				debug = "Displaying surname failed...";
 				output.println(phoneBook[contactNum].displaySName());
-				debug++;
+				debug = "Displaying phone number failed...";
 				output.println(phoneBook[contactNum].displayNumber());
-				debug++;
+				debug = "For loop completed sucessfully.. But closing the output seems to have failed :(";
 			}
 			output.close();
 		}	catch (Exception missing) {
@@ -126,6 +130,9 @@ public class Handler {
 	}
 	private void addNewEntry()	{ //used by Handler.
 		PhoneEntry entry = new PhoneEntry(FName, SName, PNum);
+		if (contactNumber >= phoneBook.length)	{
+			this.doublePB();
+		}
 		phoneBook[contactNumber] = entry;
 		contactNumber++;
 	}

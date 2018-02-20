@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import java.util.Scanner; 
 import java.io.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -36,6 +35,10 @@ public class PhoneBookWindow {
 		lblOutputPlace.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.NORMAL));
 		lblOutputPlace.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		lblOutputPlace.setBounds(414, 10, 310, 447);
+		
+		Label lblNotAValid = new Label(shlPhonebook, SWT.NONE);
+		lblNotAValid.setBounds(10, 39, 254, 21);
+		
 		//Main stuff starts here
 		
 		Handler mainHandle = new Handler(lblOutputPlace);
@@ -53,7 +56,7 @@ public class PhoneBookWindow {
 					else	{
 						mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
 						mainHandle.addNew();
-						lblOutputPlace.setText("Contact added sucessfully!");
+						lblOutputPlace.setText(mainHandle.displayAll());
 						textContact.setText(Integer.toString((mainHandle.returnLast())));
 					}
 				}
@@ -67,14 +70,24 @@ public class PhoneBookWindow {
 			@Override
 			public void mouseUp(MouseEvent e) {
 				try	{
-					mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
-					textContact.setText("");
-					txtForename.setText("");
-					txtSurname.setText("");
-					txtNumber.setText("");
-				}	catch (NumberFormatException blankDelete)	{
-					lblOutputPlace.setText("Please retreive a contact to remove!");
+					if (Integer.parseInt(textContact.getText()) == 0) {
+						lblNotAValid.setText("Not a valid contact!");
+					}
+					else	{
+						mainHandle.deleteEntry(Integer.parseInt(textContact.getText()));
+						textContact.setText("");
+						txtForename.setText("");
+						txtSurname.setText("");
+						txtNumber.setText("");
+						lblNotAValid.setText("");
+					}
 				}
+				catch (NumberFormatException blankDelete)	{
+					lblOutputPlace.setText("Please retreive a contact to remove!");
+					}	
+				catch (ArrayIndexOutOfBoundsException outOfBounds)	{
+					lblNotAValid.setText("Not a valid contact!");
+					}
 			}
 		});
 		btnRemoveContact.setText("Remove Contact");
@@ -84,7 +97,7 @@ public class PhoneBookWindow {
 		btnDisplayAll.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.displayAll();
+				lblOutputPlace.setText(mainHandle.displayAll());
 			}
 		});
 		btnDisplayAll.setText("Display All");
@@ -131,9 +144,6 @@ public class PhoneBookWindow {
 		btnSubmit.setBounds(10, 212, 95, 25);
 		btnSubmit.setText("Submit");
 		
-		Label lblNotAValid = new Label(shlPhonebook, SWT.NONE);
-		lblNotAValid.setBounds(10, 39, 254, 21);
-		
 		Label lblContactNumber = new Label(shlPhonebook, SWT.NONE);
 		lblContactNumber.setBounds(10, 15, 95, 23);
 		lblContactNumber.setText("Contact Number");
@@ -155,10 +165,10 @@ public class PhoneBookWindow {
 			@Override
 			public void mouseUp(MouseEvent e) {
 				try	{
-					String[] retreiveArray = mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
-					txtForename.setText(retreiveArray[0]);
-					txtSurname.setText(retreiveArray[1]);
-					txtNumber.setText(retreiveArray[2]);
+					tempEntry =  mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
+					txtForename.setText(tempEntry.displayFName());
+					txtSurname.setText(tempEntry.displaySName());
+					txtNumber.setText(tempEntry.displayNumber());
 					lblNotAValid.setText("");
 				} catch (Exception outOfBounds)	{
 					lblNotAValid.setText("Not a valid contact!");
