@@ -2,7 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 public class Handler {
 	int contactNumber = 1;
@@ -10,24 +10,24 @@ public class Handler {
 	String FName = "";
 	String SName = "";
 	String PNum = "";
-	Label outputLabel;
 	String returnString = "";
 	String[] retreiveArray = new String[3];
+	Text outputText;
 	PhoneEntry[] phoneBook = new PhoneEntry[2];
 	File phoneBookFile = new File ("Phonebook.txt");
 	boolean exists = phoneBookFile.exists();
 	PrintWriter output;
-	Handler (Label outputLabelPara)	{
-		outputLabel = outputLabelPara;
+	void setOutput(Text outputTextPara) {
+		outputText = outputTextPara;
 	}
 	void initialise() throws IOException	{ //This is the import function for the phoneBook.
 		if (!(exists))	{
 			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file
 			output.close(); //close it as not used here.
-			outputLabel.setText("This appears to be your first time running the programme..");
+			outputText.setText("This appears to be your first time running the programme..");
 		}	else	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
-			outputLabel.setText("Phone book importing..."); //This is never seen, as it happens too quickly.
+			outputText.setText("Phone book importing..."); //This is never seen, as it happens too quickly.
 			while (bookScanner.hasNext())	{
 				if (bookScanner.hasNextLine())	{ //first line should always be the first person's forename. 
 					FName = bookScanner.nextLine();
@@ -41,20 +41,20 @@ public class Handler {
 				this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
 			}
 			bookScanner.close(); //Only time we ever need bookScanner. 
-			outputLabel.setText("Phone book imported successfully!"); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
+			outputText.setText("Phone book imported successfully!"); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
 		}
 	}
 	Boolean hasBlank(PhoneEntry checkEntry)	{
 		if (checkEntry.displayFName().equals(""))	{ //checks for blank forename
-			outputLabel.setText("Please enter a Forename");
+			outputText.setText("Please enter a Forename");
 			return true;
 		}
 		else if (checkEntry.displaySName().equals(""))	{ //checks for blank surname
-			outputLabel.setText("Please enter a Surname");
+			outputText.setText("Please enter a Surname");
 			return true;
 		}
 		else if (checkEntry.displayNumber().equals(""))	{ //checks for blank number
-			outputLabel.setText("Please enter a phone number");
+			outputText.setText("Please enter a phone number");
 			return true;
 		}
 		else	{
@@ -68,8 +68,8 @@ public class Handler {
 	String displayAll()	{ //Displays everything to the output window
 		returnString = "";
 		for (int contactCount = 1; contactCount < contactNumber; contactCount++)	{
-			returnString += "Contact: \n";
-			returnString += contactCount;
+			returnString += "Contact ";
+			returnString += contactCount + ":";
 			returnString += "\n";
 			returnString += (phoneBook[contactCount].displayFullName());
 			returnString += "\n \n";
@@ -122,7 +122,7 @@ public class Handler {
 			}
 			output.close();
 		}	catch (Exception missing) {
-			outputLabel.setText("Error in printNew(): " + debug);
+			outputText.setText("Save error: \n" + debug + "\n" + missing);
 		}
 	}
 	public int returnLast()	{
