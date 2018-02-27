@@ -13,14 +13,18 @@ public class Handler {
 	String returnString = "";
 	String[] retreiveArray = new String[3];
 	Text outputText;
+	Text forenameText;
+	Text surnameText;
+	Text numText;
 	PhoneEntry[] phoneBook = new PhoneEntry[2];
 	File phoneBookFile = new File ("Phonebook.txt");
 	boolean exists = phoneBookFile.exists();
 	PrintWriter output;
-	void setOutput(Text outputTextPara) {
-		outputText = outputTextPara;
-	}
-	void initialise() throws IOException	{ //This is the import function for the phoneBook.
+	void initialise(Text outputTextPara, Text forenamePara, Text surnamePara, Text numPara) throws IOException	{ //This is the import function for the phoneBook. Should be at the bottom of the code where used. 
+		outputText = outputTextPara; //This sets the text boxes for later use by the handler. 
+		forenameText = forenamePara;
+		surnameText = surnamePara;
+		numText = numPara;
 		if (!(exists))	{
 			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file
 			output.close(); //close it as not used here.
@@ -65,7 +69,7 @@ public class Handler {
 		phoneBook[contactNumPara] = editEntryPara;
 		this.printNew();
 	}
-	String displayAll()	{ //Displays everything to the output window
+	void displayAll()	{ //Displays everything to the output window
 		returnString = "";
 		for (int contactCount = 1; contactCount < contactNumber; contactCount++)	{
 			returnString += "Contact ";
@@ -74,7 +78,12 @@ public class Handler {
 			returnString += (phoneBook[contactCount].displayFullName());
 			returnString += "\n \n";
 		}
-		return returnString;
+		outputText.setText(returnString);
+	}
+	void clearAll()	{
+		forenameText.setText("");
+		surnameText.setText("");
+		numText.setText("");
 	}
 	void doublePB()	{
 		PhoneEntry[] tempPhoneBook = new PhoneEntry[contactNumber*2];
@@ -104,8 +113,17 @@ public class Handler {
 		SName = SNamePara;
 		PNum = NumPara;
 	}
-	PhoneEntry retreiveContact(Integer contactPara)	{
-		return phoneBook[contactPara];
+	void retreiveContact(Integer contactPara)	{
+		try	{
+			forenameText.setText(phoneBook[contactPara].displayFName());
+			surnameText.setText(phoneBook[contactPara].displaySName());
+			numText.setText(phoneBook[contactPara].displayNumber());
+			this.displayAll();
+		}
+		catch (Exception outOfBounds)	{
+			outputText.setText("Not a valid contact!");
+			this.clearAll();
+		}
 	}
 	void printNew()	{
 		String debug = "'PhoneBook.txt' PrintWriter failed to open! Why? We don't know!";

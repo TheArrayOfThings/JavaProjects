@@ -52,15 +52,7 @@ public class PhoneBookWindow {
 		btnRetreiveContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				try	{
-					tempEntry =  mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
-					txtForename.setText(tempEntry.displayFName());
-					txtSurname.setText(tempEntry.displaySName());
-					txtNumber.setText(tempEntry.displayNumber());
-					txtOutput.setText("Contact retreived sucessfully!");
-				} catch (Exception outOfBounds)	{
-					txtOutput.setText("Not a valid contact!");
-				}
+					mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
 			}
 		});
 		btnRetreiveContact.setText("Retreive");
@@ -72,10 +64,7 @@ public class PhoneBookWindow {
 		btnClear.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				textContact.setText("");
-				txtForename.setText("");
-				txtSurname.setText("");
-				txtNumber.setText("");
+				mainHandle.clearAll();
 			}
 		});
 		btnClear.setToolTipText("This will store any changes you've made to the contact.");
@@ -147,7 +136,7 @@ public class PhoneBookWindow {
 					else	{
 						mainHandle.setCurrent(txtForename.getText(), txtSurname.getText(), txtNumber.getText());
 						mainHandle.addNew();
-						txtOutput.setText(mainHandle.displayAll());
+						mainHandle.displayAll();
 						textContact.setText(Integer.toString((mainHandle.returnLast())));
 					}
 				}
@@ -192,7 +181,7 @@ public class PhoneBookWindow {
 		btnDisplayAll.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				txtOutput.setText(mainHandle.displayAll());
+				mainHandle.displayAll();
 			}
 		});
 		btnDisplayAll.setText("Display All");
@@ -205,8 +194,7 @@ public class PhoneBookWindow {
 		gd_txtOutput.widthHint = 406;
 		gd_txtOutput.heightHint = 395;
 		txtOutput.setLayoutData(gd_txtOutput);
-		mainHandle.setOutput(txtOutput);
-		mainHandle.initialise(); //Initial import/setup
+		mainHandle.initialise(txtOutput, txtForename, txtSurname, txtNumber); //Initial import/setup
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();
