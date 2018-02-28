@@ -16,15 +16,17 @@ public class Handler {
 	Text forenameText;
 	Text surnameText;
 	Text numText;
+	Text contactText;
 	PhoneEntry[] phoneBook = new PhoneEntry[2];
 	File phoneBookFile = new File ("Phonebook.txt");
 	boolean exists = phoneBookFile.exists();
 	PrintWriter output;
-	void initialise(Text outputTextPara, Text forenamePara, Text surnamePara, Text numPara) throws IOException	{ //This is the import function for the phoneBook. Should be at the bottom of the code where used. 
+	void initialise(Text outputTextPara, Text forenamePara, Text surnamePara, Text numPara, Text contactPara) throws IOException	{ //This is the import function for the phoneBook. Should be at the bottom of the code where used. 
 		outputText = outputTextPara; //This sets the text boxes for later use by the handler. 
 		forenameText = forenamePara;
 		surnameText = surnamePara;
 		numText = numPara;
+		contactText = contactPara;
 		if (!(exists))	{
 			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file
 			output.close(); //close it as not used here.
@@ -84,6 +86,7 @@ public class Handler {
 		forenameText.setText("");
 		surnameText.setText("");
 		numText.setText("");
+		contactText.setText("");
 	}
 	void doublePB()	{
 		PhoneEntry[] tempPhoneBook = new PhoneEntry[contactNumber*2];
@@ -113,16 +116,35 @@ public class Handler {
 		SName = SNamePara;
 		PNum = NumPara;
 	}
-	void retreiveContact(Integer contactPara)	{
-		try	{
-			forenameText.setText(phoneBook[contactPara].displayFName());
-			surnameText.setText(phoneBook[contactPara].displaySName());
-			numText.setText(phoneBook[contactPara].displayNumber());
+	void retreiveContact(int modifier)	{
+		if (contactText.getText().equals(""))	{
 			this.displayAll();
-		}
-		catch (Exception outOfBounds)	{
-			outputText.setText("Not a valid contact!");
 			this.clearAll();
+		}
+		else	{
+			try	{
+				forenameText.setText(phoneBook[Integer.parseInt(contactText.getText()) - modifier].displayFName());
+				surnameText.setText(phoneBook[Integer.parseInt(contactText.getText()) - modifier].displaySName());
+				numText.setText(phoneBook[Integer.parseInt(contactText.getText()) - modifier].displayNumber());
+				if (modifier != 0) {
+					contactText.setText(String.valueOf(Integer.parseInt(contactText.getText()) - modifier));
+				}
+				this.displayAll();
+			}
+			catch (Exception outOfBounds)	{
+				if (modifier == -1) {
+					contactText.setText(String.valueOf(contactNumber - 1));
+					this.retreiveContact(0);
+				}
+				else if (modifier == 1) {
+					contactText.setText("1");
+					this.retreiveContact(0);
+				}
+				else	{
+					outputText.setText("Not a valid contact!");
+					this.clearAll();
+				}
+			}
 		}
 	}
 	void printNew()	{

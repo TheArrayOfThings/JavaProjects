@@ -15,6 +15,8 @@ import java.lang.NumberFormatException;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 public class PhoneBookWindow {
 	private static Text textContact;
 	private static Text txtForename;
@@ -33,7 +35,7 @@ public class PhoneBookWindow {
 		Shell shlPhonebook = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
 		shlPhonebook.setMinimumSize(new Point(380, 580));
 		shlPhonebook.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlPhonebook.setSize(460, 580);
+		shlPhonebook.setSize(455, 580);
 		shlPhonebook.setText("PhoneBook");
 		shlPhonebook.setLayout(new GridLayout(5, false));
 		
@@ -42,33 +44,40 @@ public class PhoneBookWindow {
 		lblContactNumber.setText("Contact Number");
 		
 		textContact = new Text(shlPhonebook, SWT.BORDER);
+		textContact.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+					mainHandle.retreiveContact(0);
+			}
+		});
 		GridData gd_textContact = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 		gd_textContact.widthHint = 14;
 		textContact.setLayoutData(gd_textContact);
 		textContact.setText("");
 		
-		Button btnRetreiveContact = new Button(shlPhonebook, SWT.NONE);
-		btnRetreiveContact.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		btnRetreiveContact.addMouseListener(new MouseAdapter() {
+		Button btnPrevious = new Button(shlPhonebook, SWT.NONE);
+		btnPrevious.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-					mainHandle.retreiveContact(Integer.parseInt((textContact.getText())));
+				mainHandle.retreiveContact(1);
 			}
 		});
-		btnRetreiveContact.setText("Retreive");
+		GridData gd_btnPrevious = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
+		gd_btnPrevious.widthHint = 61;
+		btnPrevious.setLayoutData(gd_btnPrevious);
+		btnPrevious.setText("Previous");
 		
-		Button btnClear = new Button(shlPhonebook, SWT.NONE);
-		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnClear.widthHint = 59;
-		btnClear.setLayoutData(gd_btnClear);
-		btnClear.addMouseListener(new MouseAdapter() {
+		Button btnNext = new Button(shlPhonebook, SWT.NONE);
+		btnNext.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.clearAll();
+				mainHandle.retreiveContact(-1);
 			}
 		});
-		btnClear.setToolTipText("This will store any changes you've made to the contact.");
-		btnClear.setText("Clear");
+		GridData gd_btnNext = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_btnNext.widthHint = 62;
+		btnNext.setLayoutData(gd_btnNext);
+		btnNext.setText("Next");
 		new Label(shlPhonebook, SWT.NONE);
 		
 		Label lblForename = new Label(shlPhonebook, SWT.NONE);
@@ -124,7 +133,9 @@ public class PhoneBookWindow {
 		btnSubmit.setText("Submit");
 		
 		Button btnAddContact = new Button(shlPhonebook, SWT.NONE);
-		btnAddContact.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_btnAddContact = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnAddContact.widthHint = 104;
+		btnAddContact.setLayoutData(gd_btnAddContact);
 		btnAddContact.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e)	{
@@ -146,7 +157,7 @@ public class PhoneBookWindow {
 		
 		Button btnRemoveContact = new Button(shlPhonebook, SWT.NONE);
 		GridData gd_btnRemoveContact = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnRemoveContact.widthHint = 116;
+		gd_btnRemoveContact.widthHint = 109;
 		btnRemoveContact.setLayoutData(gd_btnRemoveContact);
 		btnRemoveContact.addMouseListener(new MouseAdapter() {
 			@Override
@@ -176,7 +187,7 @@ public class PhoneBookWindow {
 		
 		Button btnDisplayAll = new Button(shlPhonebook, SWT.NONE);
 		GridData gd_btnDisplayAll = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_btnDisplayAll.widthHint = 89;
+		gd_btnDisplayAll.widthHint = 115;
 		btnDisplayAll.setLayoutData(gd_btnDisplayAll);
 		btnDisplayAll.addMouseListener(new MouseAdapter() {
 			@Override
@@ -194,7 +205,7 @@ public class PhoneBookWindow {
 		gd_txtOutput.widthHint = 406;
 		gd_txtOutput.heightHint = 395;
 		txtOutput.setLayoutData(gd_txtOutput);
-		mainHandle.initialise(txtOutput, txtForename, txtSurname, txtNumber); //Initial import/setup
+		mainHandle.initialise(txtOutput, txtForename, txtSurname, txtNumber, textContact); //Initial import/setup
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();
