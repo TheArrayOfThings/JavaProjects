@@ -6,12 +6,8 @@ import org.eclipse.swt.widgets.Text;
 
 public class Handler {
 	int contactNumber = 1;
-	int retreiveContact = 0;
-	String FName = "";
-	String SName = "";
-	String PNum = "";
+	int tempContact = 0;
 	String returnString = "";
-	String[] retreiveArray = new String[3];
 	Text outputText;
 	Text forenameText;
 	Text surnameText;
@@ -28,48 +24,46 @@ public class Handler {
 		numText = numPara;
 		contactText = contactPara;
 		if (!(exists))	{
-			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file
+			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file if it does not exist
 			output.close(); //close it as not used here.
-			outputText.setText("This appears to be your first time running the programme..");
+			outputText.setText("This appears to be your first time running the programme! /n Please complete contact details for each contact and click 'submit'. /n You can use the 'Previous' and 'Next' buttons to browse through your contacts. /n The 'Remove' button will remove the currently retreived contact.");
 		}	else	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
 			outputText.setText("Phone book importing..."); //This is never seen, as it happens too quickly.
-			while (bookScanner.hasNext())	{
-				if (bookScanner.hasNextLine())	{ //first line should always be the first person's forename. 
-					FName = bookScanner.nextLine();
+			try	{
+				while (bookScanner.hasNext())	{
+					forenameText.setText(bookScanner.nextLine());
+					surnameText.setText(bookScanner.nextLine());
+					numText.setText(bookScanner.nextLine());
+					this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
 				}
-				if (bookScanner.hasNextLine())	{ //Ect Ect. 
-					SName = bookScanner.nextLine();
-				}
-				if (bookScanner.hasNextLine())	{
-					PNum = bookScanner.nextLine();
-				}
-				this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
+				this.clearAll();
+				this.displayAll(); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
+			}	catch (Exception importFailed) {
+				outputText.setText("Import failed! The phonebook appears to be corrupt : " + importFailed);
+				output = new PrintWriter("PhoneBook.txt");
+				output.println("");
+				output.close();
 			}
 			bookScanner.close(); //Only time we ever need bookScanner. 
-			outputText.setText("Phone book imported successfully!"); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
 		}
 	}
-	Boolean hasBlank(PhoneEntry checkEntry)	{
-		if (checkEntry.displayFName().equals(""))	{ //checks for blank forename
+	Boolean hasBlank()	{
+		if (forenameText.getText().equals(""))	{ //checks for blank forename
 			outputText.setText("Please enter a Forename");
 			return true;
 		}
-		else if (checkEntry.displaySName().equals(""))	{ //checks for blank surname
+		else if (surnameText.getText().equals(""))	{ //checks for blank surname
 			outputText.setText("Please enter a Surname");
 			return true;
 		}
-		else if (checkEntry.displayNumber().equals(""))	{ //checks for blank number
+		else if (numText.getText().equals(""))	{ //checks for blank number
 			outputText.setText("Please enter a phone number");
 			return true;
 		}
 		else	{
 			return false;
 		}
-	}
-	void editContact(PhoneEntry editEntryPara, int contactNumPara)	{
-		phoneBook[contactNumPara] = editEntryPara;
-		this.printNew();
 	}
 	void displayAll()	{ //Displays everything to the output window
 		returnString = "";
@@ -80,13 +74,22 @@ public class Handler {
 			returnString += (phoneBook[contactCount].displayFullName());
 			returnString += "\n \n";
 		}
-		outputText.setText(returnString);
+		if (contactNumber <= 1) {
+			outputText.setText("Nothing to display :(");
+		}
+		else	{
+			outputText.setText(returnString);
+		}
 	}
 	void clearAll()	{
 		forenameText.setText("");
 		surnameText.setText("");
 		numText.setText("");
 		contactText.setText("");
+	}
+	void retreiveFirst()	{
+		contactText.setText("1");
+		this.retreiveContact(0);
 	}
 	void doublePB()	{
 		PhoneEntry[] tempPhoneBook = new PhoneEntry[contactNumber*2];
@@ -95,26 +98,28 @@ public class Handler {
 		}
 		phoneBook = tempPhoneBook;
 	}
-	void deleteEntry(int entryDelPara)	{
-		if (!(entryDelPara == 0))	{
-			phoneBook[entryDelPara] = null;
-			PhoneEntry[] tempPhoneBook = new PhoneEntry[1000];
-			int tempBookCount = 1;
-			for (int i = 1; i < contactNumber; i++)	{
-				if (phoneBook[i] != null) {
-					tempPhoneBook[tempBookCount] = phoneBook[i];
-					tempBookCount++;
+	void deleteEntry()	{
+		try	{
+			tempContact = Integer.parseInt(contactText.getText());
+			if (!(Integer.parseInt(contactText.getText()) == 0))	{
+				phoneBook[tempContact] = null;
+				PhoneEntry[] tempPhoneBook = new PhoneEntry[1000];
+				int tempBookCount = 1;
+				for (int i = 1; i < contactNumber; i++)	{
+					if (phoneBook[i] != null) {
+						tempPhoneBook[tempBookCount] = phoneBook[i];
+						tempBookCount++;
+					}
 				}
+				contactNumber = contactNumber - 1;
+				phoneBook = tempPhoneBook;
+				this.printNew();
+				this.displayAll();
+				this.retreiveFirst();
 			}
-			contactNumber = contactNumber - 1;
-			phoneBook = tempPhoneBook;
-			this.printNew();
+		}	catch (Exception invalidToDelete)	{
+			outputText.setText("Please retreive a valid contact to remove!");
 		}
-	}
-	void setCurrent(String FNamePara, String SNamePara, String NumPara)	{
-		FName = FNamePara;
-		SName = SNamePara;
-		PNum = NumPara;
 	}
 	void retreiveContact(int modifier)	{
 		if (contactText.getText().equals(""))	{
@@ -147,6 +152,9 @@ public class Handler {
 			}
 		}
 	}
+	PhoneEntry currentEntry()	{
+		return new PhoneEntry(forenameText.getText(), surnameText.getText(), numText.getText());
+	}
 	void printNew()	{
 		String debug = "'PhoneBook.txt' PrintWriter failed to open! Why? We don't know!";
 		try	{
@@ -169,24 +177,41 @@ public class Handler {
 		return contactNumber - 1; //Returns the contact number, not the array number. 
 	}
 	private void addNewEntry()	{ //used by Handler.
-		PhoneEntry entry = new PhoneEntry(FName, SName, PNum);
 		if (contactNumber >= phoneBook.length)	{
 			this.doublePB();
 		}
-		phoneBook[contactNumber] = entry;
+		phoneBook[contactNumber] = this.currentEntry();
 		contactNumber++;
 	}
-	public void addNew()	{ //used by main programme. 
-		this.addNewEntry();
-		this.printNew();
+	public void submit()	{ //used by main programme. 
+		if (contactText.getText().equals(""))	{
+			try	{
+				if (this.hasBlank())	{
+					outputText.setText("Enter or retreive contact details to submit!");
+				}	else if	(this.search())	{
+					outputText.setText("Contact already found!");
+				}	else	{
+					this.addNewEntry();
+					this.printNew();
+					outputText.setText("Contact added successfully!");
+				}
+			}	catch (Exception invalidNum)	{
+				outputText.setText("Invalid something something: " + invalidNum);
+			}
+		}	
+		else	{
+			if (!(this.search()))	{
+				phoneBook[Integer.parseInt(contactText.getText())] = this.currentEntry();
+				this.printNew();
+				outputText.setText("Contact changes stored!");
+			}
+		}
 	}
-	Boolean search(PhoneEntry searchEntryPara)	{
-		PhoneEntry searchEntry = searchEntryPara;
+	Boolean search()	{
 		Boolean found = false;
 		for (int i = 1; i < contactNumber; i++) {
-			if (searchEntry.displayFName().toUpperCase().equals(phoneBook[i].displayFName().toUpperCase())
-				&& searchEntry.displaySName().toUpperCase().equals(phoneBook[i].displaySName().toUpperCase())
-				&& searchEntry.displayNumber().toUpperCase().equals(phoneBook[i].displayNumber().toUpperCase()))	{
+			if (forenameText.getText().toUpperCase().trim().equals(phoneBook[i].displayFName().toUpperCase())
+				&& numText.getText().toUpperCase().trim().equals(phoneBook[i].displayNumber().toUpperCase()))	{
 				found = true;
 			}
 		}
