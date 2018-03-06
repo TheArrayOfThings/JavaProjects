@@ -117,7 +117,7 @@ public class PhoneBookWindow {
 		
 		Button btnRemoveContact = new Button(shlPhonebook, SWT.NONE);
 		GridData gd_btnRemoveContact = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnRemoveContact.widthHint = 109;
+		gd_btnRemoveContact.widthHint = 122;
 		btnRemoveContact.setLayoutData(gd_btnRemoveContact);
 		btnRemoveContact.addMouseListener(new MouseAdapter() {
 			@Override
