@@ -226,3 +226,7 @@ The password was: Dud
 The program took 0.359 seconds to complete.
 This program took 1640436 tries to guess the password.
 
+The password was: Hi
+The program took 0.002 seconds to complete.
+This program took 2627 tries to guess the password.
+
