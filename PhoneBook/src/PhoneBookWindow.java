@@ -1,6 +1,6 @@
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.FillLayout;
+//import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.swt.widgets.Label;
@@ -8,10 +8,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import java.io.*;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import java.lang.NumberFormatException;
+//import org.eclipse.swt.events.SelectionAdapter;
+//import org.eclipse.swt.events.SelectionEvent;
+//import java.lang.NumberFormatException;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.graphics.Point;
@@ -29,7 +28,7 @@ public class PhoneBookWindow {
 	 * Launch the application.
 	 * @param args
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		Display display = Display.getDefault();
 		Shell shlPhonebook = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
 		shlPhonebook.setMinimumSize(new Point(380, 580));
@@ -52,7 +51,6 @@ public class PhoneBookWindow {
 		GridData gd_textContact = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 		gd_textContact.widthHint = 14;
 		textContact.setLayoutData(gd_textContact);
-		textContact.setText("");
 		new Label(shlPhonebook, SWT.NONE);
 		
 		Button btnPrevious = new Button(shlPhonebook, SWT.NONE);

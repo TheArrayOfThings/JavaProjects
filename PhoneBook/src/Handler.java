@@ -1,5 +1,5 @@
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Scanner;
 import org.eclipse.swt.widgets.Text;
@@ -17,35 +17,44 @@ public class Handler {
 	File phoneBookFile = new File ("Phonebook.txt");
 	boolean exists = phoneBookFile.exists();
 	PrintWriter output;
-	void initialise(Text outputTextPara, Text forenamePara, Text surnamePara, Text numPara, Text contactPara) throws IOException	{ //This is the import function for the phoneBook. Should be at the bottom of the code where used. 
+	void initialise(Text outputTextPara, Text forenamePara, Text surnamePara, Text numPara, Text contactPara)	{ //This is the import function for the phoneBook. Should be at the bottom of the code where used. 
 		outputText = outputTextPara; //This sets the text boxes for later use by the handler. 
 		forenameText = forenamePara;
 		surnameText = surnamePara;
 		numText = numPara;
 		contactText = contactPara;
 		if (!(exists))	{
-			PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file if it does not exist
-			output.close(); //close it as not used here.
-			outputText.setText("This appears to be your first time running the programme! /n Please complete contact details for each contact and click 'submit'. /n You can use the 'Previous' and 'Next' buttons to browse through your contacts. /n The 'Remove' button will remove the currently retreived contact.");
+			try	{
+				PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file if it does not exist
+				output.close(); //close it as not used here.
+				outputText.setText("This appears to be your first time running the programme! /n Please complete contact details for each contact and click 'submit'. /n You can use the 'Previous' and 'Next' buttons to browse through your contacts. /n The 'Remove' button will remove the currently retreived contact.");
+			}	catch(FileNotFoundException unknownError1)	{
+				outputText.setText("Unknown error: " + unknownError1);
+			}
+
 		}	else	{
+			try	{
 			Scanner bookScanner = new Scanner (phoneBookFile);
 			outputText.setText("Phone book importing..."); //This is never seen, as it happens too quickly.
-			try	{
-				while (bookScanner.hasNext())	{
-					forenameText.setText(bookScanner.nextLine());
-					surnameText.setText(bookScanner.nextLine());
-					numText.setText(bookScanner.nextLine());
-					this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
+			while (bookScanner.hasNext())	{
+				forenameText.setText(bookScanner.nextLine());
+				surnameText.setText(bookScanner.nextLine());
+				numText.setText(bookScanner.nextLine());
+				this.addNewEntry(); //Adds each new entry without printing it to 'PhoneBook.txt' (program would never end if it did).
 				}
-				this.clearAll();
-				this.displayAll(); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
-			}	catch (Exception importFailed) {
+			this.clearAll();
+			this.displayAll(); //This triggers if a blank 'PhoneBook.txt' file is found. Bug?
+			bookScanner.close(); //Only time we ever need bookScanner. 
+			}	catch (FileNotFoundException importFailed) {
 				outputText.setText("Import failed! The phonebook appears to be corrupt : " + importFailed);
-				output = new PrintWriter("PhoneBook.txt");
+				try {
+					output = new PrintWriter("PhoneBook.txt");
+				} catch (FileNotFoundException unknownError2) {
+					outputText.setText("Unknown error: " + unknownError2);
+				}
 				output.println("");
 				output.close();
 			}
-			bookScanner.close(); //Only time we ever need bookScanner. 
 		}
 	}
 	Boolean hasBlank()	{
