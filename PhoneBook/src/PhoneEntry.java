@@ -3,24 +3,24 @@ public class PhoneEntry {
 	String SName;
 	String PNumber;	
 	PhoneEntry(String FNamePara, String SNamePara, String numPara)	{
-		FName = FNamePara;
-		SName = SNamePara;
-		PNumber = numPara;
+		FName = this.textProcess(FNamePara);
+		SName = this.textProcess(SNamePara);
+		PNumber = this.textProcess(numPara);
 	}
 	String textProcess (String inputString)	{
 		inputString = inputString.toLowerCase().trim();
 		return String.valueOf(inputString.charAt(0)).toUpperCase().charAt(0) + inputString.substring(1);
 	}
 	String displayFullName()	{
-		return (this.textProcess(FName) + " " + this.textProcess(SName));
+		return (FName + " " + SName);
 	}
 	String displayFName()	{
-		return this.textProcess(FName);
+		return FName;
 	}
 	String displaySName()	{
-		return this.textProcess(SName);
+		return SName;
 	}
 	String displayNumber()	{
-		return this.textProcess(PNumber);
+		return PNumber;
 	}
 }
