@@ -31,13 +31,15 @@ public class PhoneBookWindow {
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
 		Shell shlPhonebook = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
-		shlPhonebook.setMinimumSize(new Point(380, 580));
 		shlPhonebook.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlPhonebook.setSize(455, 580);
+		shlPhonebook.setSize(280, 580);
 		shlPhonebook.setText("PhoneBook");
-		shlPhonebook.setLayout(new GridLayout(5, false));
+		shlPhonebook.setLayout(new GridLayout(4, false));
 		
 		Label lblContactNumber = new Label(shlPhonebook, SWT.NONE);
+		GridData gd_lblContactNumber = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_lblContactNumber.widthHint = 92;
+		lblContactNumber.setLayoutData(gd_lblContactNumber);
 		lblContactNumber.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblContactNumber.setText("Contact Number");
 		
@@ -49,9 +51,8 @@ public class PhoneBookWindow {
 			}
 		});
 		GridData gd_textContact = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_textContact.widthHint = 14;
+		gd_textContact.widthHint = 24;
 		textContact.setLayoutData(gd_textContact);
-		new Label(shlPhonebook, SWT.NONE);
 		
 		Button btnPrevious = new Button(shlPhonebook, SWT.NONE);
 		btnPrevious.addMouseListener(new MouseAdapter() {
@@ -60,18 +61,10 @@ public class PhoneBookWindow {
 				mainHandle.retreiveContact(1);
 			}
 		});
-		GridData gd_btnPrevious = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
-		gd_btnPrevious.widthHint = 61;
+		GridData gd_btnPrevious = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnPrevious.widthHint = 53;
 		btnPrevious.setLayoutData(gd_btnPrevious);
 		btnPrevious.setText("Previous");
-		new Label(shlPhonebook, SWT.NONE);
-		
-		Label lblForename = new Label(shlPhonebook, SWT.NONE);
-		lblForename.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblForename.setText("Forename");
-		
-		txtForename = new Text(shlPhonebook, SWT.BORDER);
-		txtForename.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 		
 		Button btnNext = new Button(shlPhonebook, SWT.NONE);
 		btnNext.addMouseListener(new MouseAdapter() {
@@ -80,32 +73,36 @@ public class PhoneBookWindow {
 				mainHandle.retreiveContact(-1);
 			}
 		});
-		GridData gd_btnNext = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnNext = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_btnNext.widthHint = 62;
 		btnNext.setLayoutData(gd_btnNext);
 		btnNext.setText("Next");
-		new Label(shlPhonebook, SWT.NONE);
+		
+		Label lblForename = new Label(shlPhonebook, SWT.NONE);
+		lblForename.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		lblForename.setText("Forename");
+		
+		txtForename = new Text(shlPhonebook, SWT.BORDER);
+		txtForename.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
 		
 		Label lblSurname = new Label(shlPhonebook, SWT.NONE);
 		lblSurname.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblSurname.setText("Surname");
 		
 		txtSurname = new Text(shlPhonebook, SWT.BORDER);
-		txtSurname.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-		new Label(shlPhonebook, SWT.NONE);
-		new Label(shlPhonebook, SWT.NONE);
+		txtSurname.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
 		
 		Label lblNumber = new Label(shlPhonebook, SWT.NONE);
 		lblNumber.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblNumber.setText("Number");
 		
 		txtNumber = new Text(shlPhonebook, SWT.BORDER);
-		txtNumber.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		new Label(shlPhonebook, SWT.NONE);
-		new Label(shlPhonebook, SWT.NONE);
+		txtNumber.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 		
 		Button btnSubmit = new Button(shlPhonebook, SWT.NONE);
-		btnSubmit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		GridData gd_btnSubmit = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_btnSubmit.widthHint = 71;
+		btnSubmit.setLayoutData(gd_btnSubmit);
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
@@ -114,10 +111,11 @@ public class PhoneBookWindow {
 		});
 		btnSubmit.setToolTipText("This will store any changes you've made to the contact.");
 		btnSubmit.setText("Submit");
+		new Label(shlPhonebook, SWT.NONE);
 		
 		Button btnRemoveContact = new Button(shlPhonebook, SWT.NONE);
 		GridData gd_btnRemoveContact = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_btnRemoveContact.widthHint = 122;
+		gd_btnRemoveContact.widthHint = 58;
 		btnRemoveContact.setLayoutData(gd_btnRemoveContact);
 		btnRemoveContact.addMouseListener(new MouseAdapter() {
 			@Override
@@ -125,30 +123,28 @@ public class PhoneBookWindow {
 						mainHandle.deleteEntry();
 			}
 		});
-		btnRemoveContact.setText("Remove Contact");
+		btnRemoveContact.setText("Remove");
 		
-		Button btnDisplayAll = new Button(shlPhonebook, SWT.NONE);
-		GridData gd_btnDisplayAll = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_btnDisplayAll.widthHint = 103;
-		btnDisplayAll.setLayoutData(gd_btnDisplayAll);
-		btnDisplayAll.addMouseListener(new MouseAdapter() {
+		Button btnClear = new Button(shlPhonebook, SWT.NONE);
+		btnClear.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				mainHandle.displayAll();
+				mainHandle.clearAll();
 			}
 		});
-		btnDisplayAll.setText("Display All");
-		new Label(shlPhonebook, SWT.NONE);
-		new Label(shlPhonebook, SWT.NONE);
+		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnClear.widthHint = 39;
+		btnClear.setLayoutData(gd_btnClear);
+		btnClear.setText("Clear");
 		
 		txtOutput = new Text(shlPhonebook, SWT.READ_ONLY | SWT.BORDER |SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
 		txtOutput.setFont(SWTResourceManager.getFont("Calibri", 12, SWT.NORMAL));
 		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		GridData gd_txtOutput = new GridData(SWT.LEFT, SWT.FILL, false, false, 5, 1);
-		gd_txtOutput.widthHint = 406;
+		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
+		gd_txtOutput.widthHint = 184;
 		gd_txtOutput.heightHint = 395;
 		txtOutput.setLayoutData(gd_txtOutput);
-		mainHandle.initialise(txtOutput, txtForename, txtSurname, txtNumber, textContact); //Initial import/setup
+		mainHandle.initialise(txtOutput, txtForename, txtSurname, txtNumber, textContact);
 	
 		shlPhonebook.open();
 		shlPhonebook.layout();

@@ -133,7 +133,7 @@ public class Handler {
 	void retreiveContact(int modifier)	{
 		if (contactText.getText().equals(""))	{
 			this.displayAll();
-			this.clearAll();
+			this.retreiveFirst();
 		}
 		else	{
 			try	{
@@ -146,13 +146,12 @@ public class Handler {
 				this.displayAll();
 			}
 			catch (Exception outOfBounds)	{
-				if (modifier == -1) {
+				if (modifier < 0) {
 					contactText.setText(String.valueOf(contactNumber - 1));
 					this.retreiveContact(0);
 				}
-				else if (modifier == 1) {
-					contactText.setText("1");
-					this.retreiveContact(0);
+				else if (modifier > 0) {
+					this.retreiveFirst();
 				}
 				else	{
 					outputText.setText("Not a valid contact!");
@@ -182,9 +181,6 @@ public class Handler {
 			outputText.setText("Save error: \n" + debug + "\n" + missing);
 		}
 	}
-	public int returnLast()	{
-		return contactNumber - 1; //Returns the contact number, not the array number. 
-	}
 	private void addNewEntry()	{ //used by Handler.
 		if (contactNumber >= phoneBook.length)	{
 			this.doublePB();
@@ -196,13 +192,13 @@ public class Handler {
 		if (contactText.getText().equals(""))	{
 			try	{
 				if (this.hasBlank())	{
-					outputText.setText("Enter or retreive contact details to submit!");
 				}	else if	(this.search())	{
 					outputText.setText("Contact already found!");
 				}	else	{
 					this.addNewEntry();
 					this.printNew();
-					outputText.setText("Contact added successfully!");
+					this.displayAll();
+					contactText.setText(String.valueOf(contactNumber - 1));
 				}
 			}	catch (Exception invalidNum)	{
 				outputText.setText("Invalid something something: " + invalidNum);
