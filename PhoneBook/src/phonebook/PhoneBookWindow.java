@@ -1,3 +1,5 @@
+package phonebook;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 //import org.eclipse.swt.layout.FillLayout;
@@ -30,6 +32,7 @@ public class PhoneBookWindow {
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
 		Shell shlPhonebook = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
+		shlPhonebook.setImage(SWTResourceManager.getImage(PhoneBookWindow.class, "/resources/LogoBasic.png"));
 		shlPhonebook.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlPhonebook.setSize(280, 580);
 		shlPhonebook.setText("PhoneBook");

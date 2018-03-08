@@ -1,3 +1,5 @@
+package phonebook;
+
 public class PhoneEntry {
 	String FName;
 	String SName;
