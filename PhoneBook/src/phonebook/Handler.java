@@ -211,8 +211,7 @@ public class Handler {
 					this.addNewEntry();
 					this.printNew();
 					this.displayAll();
-					contactText.setText(String.valueOf(contactNumber - 1));
-					this.retreiveContact(0);
+					this.clearAll();
 				}
 			}	catch (Exception invalidNum)	{
 				outputText.setText("Invalid something something: " + invalidNum);
