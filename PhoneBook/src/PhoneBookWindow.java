@@ -10,10 +10,9 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 //import org.eclipse.swt.events.SelectionAdapter;
 //import org.eclipse.swt.events.SelectionEvent;
-//import java.lang.NumberFormatException;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.graphics.Point;
+//import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 public class PhoneBookWindow {

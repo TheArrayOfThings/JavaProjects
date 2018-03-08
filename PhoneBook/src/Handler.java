@@ -25,9 +25,17 @@ public class Handler {
 		contactText = contactPara;
 		if (!(exists))	{
 			try	{
+				String instructions = "The'submit' button is used to store changes and add new contacts.\r\n" +
+						"\r\nYou can use the 'Previous' and 'Next' buttons to browse through your contacts.\r\n" + 
+						"\r\nThe 'Remove' button will remove the currently retreived contact.\r\n" + 
+						"\r\nThe 'Clear' button clears the currently retreived contact.\r\n";
+				PrintWriter instructionsOutput = new PrintWriter ("Phonebook Instructions.txt");
 				PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file if it does not exist
 				output.close(); //close it as not used here.
-				outputText.setText("This appears to be your first time running the programme! /n Please complete contact details for each contact and click 'submit'. /n You can use the 'Previous' and 'Next' buttons to browse through your contacts. /n The 'Remove' button will remove the currently retreived contact.");
+				instructionsOutput.print(instructions);
+				instructionsOutput.close();
+				outputText.setText("This appears to be your first time running the programme!\r\n\r\n" + instructions + 
+						"\r\nThese instructions have been stored in 'Phonebook Instructions.txt");
 			}	catch(FileNotFoundException unknownError1)	{
 				outputText.setText("Unknown error: " + unknownError1);
 			}
@@ -79,12 +87,13 @@ public class Handler {
 		for (int contactCount = 1; contactCount < contactNumber; contactCount++)	{
 			returnString += "Contact ";
 			returnString += contactCount + ":";
-			returnString += "\n";
+			returnString += "\r\n";
 			returnString += (phoneBook[contactCount].displayFullName());
-			returnString += "\n \n";
+			returnString += "\r\n \r\n";
 		}
 		if (contactNumber <= 1) {
-			outputText.setText("Nothing to display :(");
+			outputText.setText("Your phonebook appears to be blank. \r\n" + 
+					"\r\nPlease refer to 'Phonebook Instructions.txt' for operating instructions.");
 		}
 		else	{
 			outputText.setText(returnString);
@@ -178,7 +187,7 @@ public class Handler {
 			}
 			output.close();
 		}	catch (Exception missing) {
-			outputText.setText("Save error: \n" + debug + "\n" + missing);
+			outputText.setText("Save error: \r\n" + debug + "\r\n" + missing);
 		}
 	}
 	private void addNewEntry()	{ //used by Handler.
@@ -194,11 +203,15 @@ public class Handler {
 				if (this.hasBlank())	{
 				}	else if	(this.search())	{
 					outputText.setText("Contact already found!");
-				}	else	{
+				}	else if(!(this.validNumber()))	{
+					outputText.setText("Phone number is not valid!");
+				}
+				else	{
 					this.addNewEntry();
 					this.printNew();
 					this.displayAll();
 					contactText.setText(String.valueOf(contactNumber - 1));
+					this.retreiveContact(0);
 				}
 			}	catch (Exception invalidNum)	{
 				outputText.setText("Invalid something something: " + invalidNum);
@@ -210,6 +223,14 @@ public class Handler {
 				this.printNew();
 				outputText.setText("Contact changes stored!");
 			}
+		}
+	}
+	Boolean validNumber()	{
+		try	{
+			Double.parseDouble(numText.getText());
+			return true;
+		}	catch (NumberFormatException invalid)	{
+			return false;
 		}
 	}
 	Boolean search()	{
