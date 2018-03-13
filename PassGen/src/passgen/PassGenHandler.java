@@ -1,18 +1,145 @@
 package passgen;
 import java.io.*;
-import java.util.Random;
-import java.io.PrintWriter;
+
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Text;
+import java.util.Scanner;
 
 public class PassGenHandler {
-	Boolean storeExists = false;
-	private String encryptionKey = "1483";
-	private PassWord[] passBook = new PassWord[1000];
+	private String decryptWord = "RyanRules";
+	private String firstLine = "";
+	private int encrypt1 = 0;
+	private int encrypt2 = 0;
+	private int encrypt3 = 0;
+	private int encrypt4 = 0;
 	private int totalPasses = 0;
-	private void storePasswords() throws IOException	{
-		PrintWriter passOutput = new PrintWriter("SavedPasses.txt");
-		for (int i = 0; i < totalPasses; i++) {
-			passOutput.println(passBook[i].returnName());
-			passOutput.println(passBook[i].returnPass());
+	private Text outputText;
+	private Text keyText;
+	private Text passNameText;
+	private Button submit;
+	private PassWord[] passBook = new PassWord[1000];
+	private File savedPass = new File("SavedPasses.txt");
+	public void initialise(Text keyTextPara, Text outputTextPara, Text passNamePara, Button submitPara)	{
+		keyText = keyTextPara;
+		outputText = outputTextPara;
+		passNameText = passNamePara;
+		submit = submitPara;
+		passNameText.setVisible(false);
+		keyText.setVisible(true);
+		submit.setVisible(true);
+		if (!(savedPass.exists()))	{
+			outputText.setText("Please enter a 4-digit encryption key and press 'Submit' \r\n"
+					+ "You will have to remember this code!");
+		}	else	{
+			outputText.setText("Please enter your pin and press 'Submit'");
 		}
+	}
+	public void keyCheck()	{
+		//Used to check pin against stored record
+	}
+	private void importAll() throws IOException	{
+		Scanner passScanner = new Scanner(savedPass);
+		firstLine = passScanner.nextLine();
+	}
+	public void exportAll() throws IOException	{
+		PrintWriter passOutput = new PrintWriter("SavedPasses.txt");
+		this.setKey(); //Remove This!
+		passOutput.println(this.encrypt(decryptWord));
+		for (int i = 0; i < totalPasses; i++) {
+			passOutput.println(this.encrypt(passBook[i].returnName()));
+			passOutput.println(this.encrypt(passBook[i].returnPass()));
+		}
+		passOutput.close();
+	}
+	private void setKey()	{
+		encrypt1 = Integer.parseInt(keyText.getText().substring(0,1));
+		encrypt2 = Integer.parseInt(keyText.getText().substring(1,2));
+		encrypt3 = Integer.parseInt(keyText.getText().substring(2,3));
+		encrypt4 = Integer.parseInt(keyText.getText().substring(3,4));
+	}
+	public void submit()	{
+		if (!(savedPass.exists()))	{
+			this.setKey();
+			//outputText.setText("Pin set to " + String.valueOf(encrypt1) + String.valueOf(encrypt2) + String.valueOf(encrypt3) + String.valueOf(encrypt4));
+			outputText.setText(this.decrypt(this.encrypt(decryptWord)));//this.decrypt(this.encrypt(decryptWord)));
+			//outputText.setText(String.valueOf('b' + 0));
+			}
+		else	{
+			//Will add new password object and set the encryption key.
+		}
+	}
+	public void encryptTest() throws IOException	{
+		this.importAll();
+		this.setKey();
+		if (this.decrypt(firstLine).equals(decryptWord))	{
+			outputText.setText("Success!");
+		}
+		else	{
+			outputText.setText("Nope!");
+		}
+	}
+	public void remove()	{
+		//Removes a password object.
+	}
+	private void search()	{
+		//Searches through objects for one in particular. 
+		//Want to flag if name or password matches?
+	}
+	private String encrypt(String encryptPara)	{
+		String encryptedString = "";
+		for (int i=0; i<encryptPara.length();)	{
+			encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt2)));
+			i++;
+			if (i < encryptPara.length())	{
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt3)));
+				i++;
+			}
+			if (i < encryptPara.length())	{
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt1)));
+				i++;
+			}
+			if (i < encryptPara.length())	{
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt4)));
+				i++;
+			}
+		}
+		return this.scramble(encryptedString);
+	}
+	private String decrypt(String decryptPara) {
+		String unscrambled = this.scramble(decryptPara);
+		String decryptedString = "";
+		for (int i=0; i<decryptPara.length();)	{
+			decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt2)));
+			i++;
+			if (i < decryptPara.length())	{
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt3)));
+				i++;
+			}
+			if (i < decryptPara.length())	{
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt1)));
+				i++;
+			}
+			if (i < decryptPara.length())	{
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt4)));
+				i++;
+			}
+		}
+		return decryptedString;
+	}
+	private String scramble(String scramblePara)	{
+		String scrambledString = "";
+		String [] stringChars = scramblePara.split("");
+		int highIndex = (stringChars.length - 1);
+		int currentIndex = 0;
+		while (currentIndex <= highIndex) {
+			if (currentIndex % 2 == 0)	{
+				scrambledString += stringChars[currentIndex];
+				currentIndex++;
+			}	else	{
+				scrambledString += stringChars[highIndex];
+				highIndex--;
+				}
+			}
+		return scrambledString;
 	}
 }
