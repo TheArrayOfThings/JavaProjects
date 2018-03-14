@@ -2,6 +2,7 @@ package passgen;
 import java.io.*;
 
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import java.util.Scanner;
 
@@ -16,30 +17,42 @@ public class PassGenHandler {
 	private Text outputText;
 	private Text keyText;
 	private Text passNameText;
-	private Button submit;
+	private Text passwordText;
 	private PassWord[] passBook = new PassWord[1000];
 	private File savedPass = new File("SavedPasses.txt");
-	public void initialise(Text keyTextPara, Text outputTextPara, Text passNamePara, Button submitPara)	{
+	public void initialise(Text keyTextPara, Text outputTextPara, Text passNamePara, Text passwordPara)	{
 		keyText = keyTextPara;
 		outputText = outputTextPara;
 		passNameText = passNamePara;
-		submit = submitPara;
-		passNameText.setVisible(false);
+		passwordText = passwordPara;
 		keyText.setVisible(true);
-		submit.setVisible(true);
 		if (!(savedPass.exists()))	{
 			outputText.setText("Please enter a 4-digit encryption key and press 'Submit' \r\n"
 					+ "You will have to remember this code!");
 		}	else	{
+			this.importAll();
 			outputText.setText("Please enter your pin and press 'Submit'");
 		}
 	}
-	public void keyCheck()	{
-		//Used to check pin against stored record
+	public Boolean keyCheck()	{ //Used to check pin against stored record
+		this.setKey();
+		if (this.decrypt(firstLine).equals(decryptWord)) { //Pin accepted
+			outputText.setText("PIN accepted!");
+			return true;
+		}	else	{
+			outputText.setText("PIN incorrect, please try again.");
+			return false;
+			//Add limit to number of tries before deletion.
+		}
 	}
-	private void importAll() throws IOException	{
-		Scanner passScanner = new Scanner(savedPass);
-		firstLine = passScanner.nextLine();
+	private void importAll()	{
+		Scanner passScanner;
+		try {
+			passScanner = new Scanner(savedPass);
+			firstLine = passScanner.nextLine();
+		} catch (FileNotFoundException unknown1) {
+			outputText.setText("Unknown error: " + unknown1);
+		}
 	}
 	public void exportAll() throws IOException	{
 		PrintWriter passOutput = new PrintWriter("SavedPasses.txt");
@@ -60,22 +73,10 @@ public class PassGenHandler {
 	public void submit()	{
 		if (!(savedPass.exists()))	{
 			this.setKey();
-			//outputText.setText("Pin set to " + String.valueOf(encrypt1) + String.valueOf(encrypt2) + String.valueOf(encrypt3) + String.valueOf(encrypt4));
-			outputText.setText(this.decrypt(this.encrypt(decryptWord)));//this.decrypt(this.encrypt(decryptWord)));
-			//outputText.setText(String.valueOf('b' + 0));
-			}
-		else	{
+			outputText.setText("Pin set to " + keyText.getText());
+			}	else	{
+			this.keyCheck();
 			//Will add new password object and set the encryption key.
-		}
-	}
-	public void encryptTest() throws IOException	{
-		this.importAll();
-		this.setKey();
-		if (this.decrypt(firstLine).equals(decryptWord))	{
-			outputText.setText("Success!");
-		}
-		else	{
-			outputText.setText("Nope!");
 		}
 	}
 	public void remove()	{
