@@ -31,8 +31,6 @@ public class Handler {
 						"\r\nThe 'Remove' button will remove the currently retreived contact.\r\n" + 
 						"\r\nThe 'Clear' button clears the currently retreived contact.\r\n";
 				PrintWriter instructionsOutput = new PrintWriter ("Phonebook Instructions.txt");
-				PrintWriter output = new PrintWriter ("Phonebook.txt"); //create text file if it does not exist
-				output.close(); //close it as not used here.
 				instructionsOutput.print(instructions);
 				instructionsOutput.close();
 				outputText.setText("This appears to be your first time running the programme!\r\n\r\n" + instructions + 
