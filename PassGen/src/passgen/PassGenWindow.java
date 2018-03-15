@@ -69,7 +69,7 @@ public class PassGenWindow {
 		btnSetKey.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (mainHandle.keyCheck())	{
+				if (mainHandle.submit())	{
 					lblPinLabel.setVisible(false);
 					textKey.setVisible(false);
 					btnSetKey.setVisible(false);
@@ -78,7 +78,10 @@ public class PassGenWindow {
 					lblActualPw.setVisible(true);
 					txtPassword.setVisible(true);
 					btnAddNew.setVisible(true);
+				}	else	{
+					
 				}
+
 			}
 		});
 		btnSetKey.setText("Submit");
@@ -87,7 +90,7 @@ public class PassGenWindow {
 		btnTest.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				//Test stuff goes here
+				mainHandle.test();//Test stuff goes here
 			}
 		});
 		btnTest.setText("Test");
@@ -106,7 +109,7 @@ public class PassGenWindow {
 		btnAddNew.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				mainHandle.submit();
+				mainHandle.addNew();
 			}
 		});
 		btnAddNew.setText("Submit");
@@ -116,12 +119,7 @@ public class PassGenWindow {
 		btnPrintall.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				try {
-					mainHandle.exportAll();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				mainHandle.exportAll();
 			}
 		});
 		btnPrintall.setText("PrintAll");

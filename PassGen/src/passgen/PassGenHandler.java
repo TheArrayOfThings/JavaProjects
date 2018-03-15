@@ -34,7 +34,7 @@ public class PassGenHandler {
 			outputText.setText("Please enter your pin and press 'Submit'");
 		}
 	}
-	public Boolean keyCheck()	{ //Used to check pin against stored record
+	private Boolean keyCheck()	{ //Used to check pin against stored record
 		this.setKey();
 		if (this.decrypt(firstLine).equals(decryptWord)) { //Pin accepted
 			outputText.setText("PIN accepted!");
@@ -54,15 +54,20 @@ public class PassGenHandler {
 			outputText.setText("Unknown error: " + unknown1);
 		}
 	}
-	public void exportAll() throws IOException	{
-		PrintWriter passOutput = new PrintWriter("SavedPasses.txt");
-		this.setKey(); //Remove This!
-		passOutput.println(this.encrypt(decryptWord));
-		for (int i = 0; i < totalPasses; i++) {
-			passOutput.println(this.encrypt(passBook[i].returnName()));
-			passOutput.println(this.encrypt(passBook[i].returnPass()));
+	public void exportAll()	{
+		PrintWriter passOutput;
+		try {
+			passOutput = new PrintWriter("SavedPasses.txt");
+			this.setKey(); //Remove This!
+			passOutput.println(this.encrypt(decryptWord));
+			for (int i = 0; i < totalPasses; i++) {
+				passOutput.println(this.encrypt(passBook[i].returnName()));
+				passOutput.println(this.encrypt(passBook[i].returnPass()));
+				}
+			passOutput.close();
+		} catch (FileNotFoundException unknown2) {
+			outputText.setText("Unknown error: " + unknown2);
 		}
-		passOutput.close();
 	}
 	private void setKey()	{
 		encrypt1 = Integer.parseInt(keyText.getText().substring(0,1));
@@ -70,37 +75,52 @@ public class PassGenHandler {
 		encrypt3 = Integer.parseInt(keyText.getText().substring(2,3));
 		encrypt4 = Integer.parseInt(keyText.getText().substring(3,4));
 	}
-	public void submit()	{
+	public Boolean submit()	{
 		if (!(savedPass.exists()))	{
 			this.setKey();
 			outputText.setText("Pin set to " + keyText.getText());
-			}	else	{
-			this.keyCheck();
-			//Will add new password object and set the encryption key.
+			this.exportAll();
+			return true;
+			}
+		else	{
+			return this.keyCheck();
+			}
 		}
+	public void test()	{
+		this.importAll();
+		this.setKey();
+		outputText.setText("Encrypted: " + firstLine + "\r\nDecrypted: " + this.decrypt(firstLine));
+		
+	}
+	private void retreive()	{
+		//Retreives 
+	}
+	public void addNew()	{
+		//Adds new password object.
 	}
 	public void remove()	{
 		//Removes a password object.
 	}
-	private void search()	{
+	public boolean search(PassWord searchObject)	{
+		return true;
 		//Searches through objects for one in particular. 
 		//Want to flag if name or password matches?
 	}
 	private String encrypt(String encryptPara)	{
 		String encryptedString = "";
 		for (int i=0; i<encryptPara.length();)	{
-			encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt2)));
+			encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt2 / 2)));
 			i++;
 			if (i < encryptPara.length())	{
-				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt3)));
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt3 / 2)));
 				i++;
 			}
 			if (i < encryptPara.length())	{
-				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt1)));
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt1 / 2)));
 				i++;
 			}
 			if (i < encryptPara.length())	{
-				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt4)));
+				encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt4 / 2)));
 				i++;
 			}
 		}
@@ -110,18 +130,18 @@ public class PassGenHandler {
 		String unscrambled = this.scramble(decryptPara);
 		String decryptedString = "";
 		for (int i=0; i<decryptPara.length();)	{
-			decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt2)));
+			decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt2 / 2)));
 			i++;
 			if (i < decryptPara.length())	{
-				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt3)));
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt3 / 2)));
 				i++;
 			}
 			if (i < decryptPara.length())	{
-				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt1)));
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt1 / 2)));
 				i++;
 			}
 			if (i < decryptPara.length())	{
-				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt4)));
+				decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt4 / 2)));
 				i++;
 			}
 		}
