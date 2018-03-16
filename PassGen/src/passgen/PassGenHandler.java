@@ -20,6 +20,7 @@ public class PassGenHandler {
 	private Text passwordText;
 	private PassWord[] passBook = new PassWord[1000];
 	private File savedPass = new File("SavedPasses.txt");
+	private Scanner passScanner;
 	public void initialise(Text keyTextPara, Text outputTextPara, Text passNamePara, Text passwordPara)	{
 		keyText = keyTextPara;
 		outputText = outputTextPara;
@@ -30,14 +31,15 @@ public class PassGenHandler {
 			outputText.setText("Please enter a 4-digit encryption key and press 'Submit' \r\n"
 					+ "You will have to remember this code!");
 		}	else	{
-			this.importAll();
 			outputText.setText("Please enter your pin and press 'Submit'");
 		}
 	}
 	private Boolean keyCheck()	{ //Used to check pin against stored record
 		this.setKey();
+		this.importFirst();
 		if (this.decrypt(firstLine).equals(decryptWord)) { //Pin accepted
 			outputText.setText("PIN accepted!");
+			this.importAll();
 			return true;
 		}	else	{
 			outputText.setText("PIN incorrect, please try again.");
@@ -45,8 +47,7 @@ public class PassGenHandler {
 			//Add limit to number of tries before deletion.
 		}
 	}
-	private void importAll()	{
-		Scanner passScanner;
+	private void importFirst()	{
 		try {
 			passScanner = new Scanner(savedPass);
 			firstLine = passScanner.nextLine();
@@ -54,11 +55,16 @@ public class PassGenHandler {
 			outputText.setText("Unknown error: " + unknown1);
 		}
 	}
+	private void importAll()	{
+			while(passScanner.hasNext())	{
+				passBook[totalPasses] = new PassWord(this.decrypt(passScanner.nextLine()), this.decrypt(passScanner.nextLine()));
+				totalPasses++;
+			}
+	}
 	public void exportAll()	{
 		PrintWriter passOutput;
 		try {
 			passOutput = new PrintWriter("SavedPasses.txt");
-			this.setKey(); //Remove This!
 			passOutput.println(this.encrypt(decryptWord));
 			for (int i = 0; i < totalPasses; i++) {
 				passOutput.println(this.encrypt(passBook[i].returnName()));
@@ -86,17 +92,15 @@ public class PassGenHandler {
 			return this.keyCheck();
 			}
 		}
-	public void test()	{
-		this.importAll();
-		this.setKey();
-		outputText.setText("Encrypted: " + firstLine + "\r\nDecrypted: " + this.decrypt(firstLine));
-		
-	}
-	private void retreive()	{
+	public void retreive(int toRetreivePara)	{
+		passNameText.setText(passBook[toRetreivePara].returnName());
+		passwordText.setText(passBook[toRetreivePara].returnPass());
 		//Retreives 
 	}
-	public void addNew()	{
-		//Adds new password object.
+	public void addNew()	{ //adds new password object to end of array
+		passBook[totalPasses] = new PassWord(passNameText.getText(), passwordText.getText());
+		totalPasses++;
+		this.exportAll();
 	}
 	public void remove()	{
 		//Removes a password object.

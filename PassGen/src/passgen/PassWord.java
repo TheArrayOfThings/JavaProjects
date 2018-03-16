@@ -3,9 +3,9 @@ package passgen;
 public class PassWord {
 	private String password = "";
 	private String pName = "";
-	PassWord (String passwordPara, String namePara, String encryptionKeyPara)	{
-		password = passwordPara;
+	PassWord (String namePara, String passwordPara)	{
 		pName = namePara;
+		password = passwordPara;
 	}
 	public String returnName()	{
 		return pName;

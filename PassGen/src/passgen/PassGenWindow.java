@@ -22,13 +22,13 @@ public class PassGenWindow {
 	private static Text txtPassname;
 	private static Text txtOutput;
 	private static Button btnSetKey;
-	private static Button btnTest;
-	private static Button btnPrintall;
 	private static Text txtPassword;
 	private static Label lblPWName;
 	private static Label lblPinLabel;
 	private static Label lblActualPw;
 	private static Button btnAddNew;
+	private static Button button;
+	private static Button button_1;
 	/**
 	 * Launch the application.
 	 * @param args
@@ -51,8 +51,18 @@ public class PassGenWindow {
 		txtPassname.setText("PassName");
 		txtPassname.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		txtPassname.setVisible(false);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
+		
+		button = new Button(shell, SWT.NONE);
+		button.setText("<");
+		
+		button_1 = new Button(shell, SWT.NONE);
+		button_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mainHandle.retreive(0);
+			}
+		});
+		button_1.setText(">");
 		
 		lblPinLabel = new Label(shell, SWT.NONE);
 		lblPinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -66,6 +76,7 @@ public class PassGenWindow {
 		textKey.setLayoutData(gd_txtKey);
 		
 		btnSetKey = new Button(shell, SWT.NONE);
+		btnSetKey.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 		btnSetKey.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -86,15 +97,6 @@ public class PassGenWindow {
 		});
 		btnSetKey.setText("Submit");
 		
-		btnTest = new Button(shell, SWT.NONE);
-		btnTest.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				mainHandle.test();//Test stuff goes here
-			}
-		});
-		btnTest.setText("Test");
-		
 		lblActualPw = new Label(shell, SWT.NONE);
 		lblActualPw.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblActualPw.setText("Actual PW");
@@ -106,6 +108,9 @@ public class PassGenWindow {
 		txtPassword.setVisible(false);
 		
 		btnAddNew = new Button(shell, SWT.NONE);
+		GridData gd_btnAddNew = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		gd_btnAddNew.widthHint = 47;
+		btnAddNew.setLayoutData(gd_btnAddNew);
 		btnAddNew.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -115,22 +120,12 @@ public class PassGenWindow {
 		btnAddNew.setText("Submit");
 		btnAddNew.setVisible(false);
 		
-		btnPrintall = new Button(shell, SWT.NONE);
-		btnPrintall.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				mainHandle.exportAll();
-			}
-		});
-		btnPrintall.setText("PrintAll");
-		
 		txtOutput = new Text(shell, SWT.BORDER | SWT.WRAP);
 		txtOutput.setText("Output");
-		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_txtOutput.heightHint = 160;
+		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
+		gd_txtOutput.widthHint = 350;
+		gd_txtOutput.heightHint = 157;
 		txtOutput.setLayoutData(gd_txtOutput);
-		
-		new Label(shell, SWT.NONE);
 		
 		mainHandle.initialise(textKey, txtOutput, txtPassname, txtPassword);
 		
