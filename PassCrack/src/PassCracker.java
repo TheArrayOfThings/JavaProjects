@@ -20,7 +20,7 @@ class PassObject	{
 	}
 }
 class PassCracker	{
-	String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ ";
+	String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ \"";
 	long triesCount = 0;
 	String password = "";
 	String guess = "";
