@@ -97,7 +97,7 @@ public class PassGenWindow {
 		btnSetKey.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (mainHandle.submit())	{
+				if (mainHandle.pinEntry())	{
 					lblPinLabel.setVisible(false);
 					textKey.setVisible(false);
 					btnSetKey.setVisible(false);
@@ -108,6 +108,7 @@ public class PassGenWindow {
 					btnAddNew.setVisible(true);
 					buttonPrevious.setVisible(true);
 					buttonNext.setVisible(true);
+					btnGenerate.setVisible(true);;
 				}	else	{
 					
 				}
@@ -146,6 +147,7 @@ public class PassGenWindow {
 			}
 		});
 		btnGenerate.setText("Generate");
+		btnGenerate.setVisible(false);
 		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
