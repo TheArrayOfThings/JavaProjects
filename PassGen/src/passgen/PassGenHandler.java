@@ -23,7 +23,7 @@ public class PassGenHandler {
 	private Text keyText;
 	private Text passNameText;
 	private Text passwordText;
-	private PassWord[] passBook = new PassWord[1000];
+	private PassWord[] passBook = new PassWord[2];
 	private File savedPass = new File("SavedPasses.txt");
 	private Scanner passScanner;
 	public void initialise(Text keyTextPara, Text outputTextPara, Text passNamePara, Text passwordPara)	{
@@ -47,6 +47,9 @@ public class PassGenHandler {
 		}
 	}
 	private void importAll()	{
+			if (passBook.length >= totalPasses) {
+				this.doubleArray();
+			}
 			while(passScanner.hasNext())	{
 				passBook[totalPasses] = new PassWord(totalPasses, this.decrypt(passScanner.nextLine()), this.decrypt(passScanner.nextLine()));
 				totalPasses++;
@@ -117,12 +120,16 @@ public class PassGenHandler {
 		passNameText.setText(passBook[currentPass].returnName());
 		passwordText.setText(passBook[currentPass].returnPass());
 	}
+	public void clear()	{
+		passNameText.setText("");
+		passwordText.setText("");
+	}
 	public PassWord retreive(int toRetreivePara)	{
 		if (toRetreivePara < totalPasses && toRetreivePara >= 0) {
 			currentPass = toRetreivePara;
 			this.setCurrent();
 			return passBook[toRetreivePara];
-		}	else if (toRetreivePara >= totalPasses)	{
+		}	else if (toRetreivePara >= totalPasses && toRetreivePara != 0)	{
 			currentPass = totalPasses - 1;
 			return passBook[totalPasses - 1];
 		}	else	{
@@ -130,9 +137,24 @@ public class PassGenHandler {
 			return passBook[0];
 		}
 	}
+	private void doubleArray()	{
+		PassWord[] tempBook = new PassWord[passBook.length*2];
+		for (int i=0; i<totalPasses; ++i) {
+			tempBook[i] = passBook[i];
+		}
+		passBook = tempBook;
+	}
 	public void addNew()	{ //adds new password object to end of array
-		if (this.search(passNameText.getText().trim()))	{
-			outputText.setText("Name already exists!");
+		if (passBook.length >= totalPasses) {
+			this.doubleArray();
+		}
+		if (this.search() == 1)	{
+			outputText.setText("Password name already in use!");
+		}	else if (this.search() == 2)	{
+			outputText.setText("Password already in use!");
+		}
+			else if (passNameText.getText().trim().equals("") || passwordText.getText().trim().equals(""))	{
+			outputText.setText("Please add a name and generate a password!");
 		}	else	{
 			passBook[totalPasses] = new PassWord(totalPasses, passNameText.getText(), passwordText.getText());
 			totalPasses++;
@@ -140,22 +162,27 @@ public class PassGenHandler {
 			this.exportAll();
 		}
 	}
-	public String generateNew()	{
+	public void generateNew()	{
 		String returnString = "";
-		for (int i=0; i<20; i++) {
-			returnString += characters.charAt(random.nextInt(characters.length()));
+		if (passwordText.getText().equals(""))	{
+			for (int i=0; i<20; i++) {
+				returnString += characters.charAt(random.nextInt(characters.length()));
+			}
+			passwordText.setText(returnString);
+		}	else	{
+			outputText.setText("Please press 'clear' before generating a new password!");
 		}
-		return returnString;
 	}
 	public void remove()	{
 		//Removes a password object.
 	}
-	private boolean search(String nameString)	{
-		nameString = nameString.trim();
-		Boolean found = false;
+	private int search()	{
+		int found = 0;
 		for (int i=0; i<totalPasses; i++) {
-			if (passBook[i].returnName().equals(nameString))	{
-				found = true;
+			if (passBook[i].returnName().toUpperCase().equals(passNameText.getText().trim().toUpperCase()))	{
+				found = 1;
+			}	else if (passBook[i].returnPass().toUpperCase().equals(passwordText.getText().trim().toUpperCase())) {
+				found = 2;
 			}
 		}
 		return found;

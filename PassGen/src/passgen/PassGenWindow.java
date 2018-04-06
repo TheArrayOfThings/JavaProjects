@@ -31,6 +31,7 @@ public class PassGenWindow {
 	private static Button buttonNext;
 	private static Button btnGenerate;
 	private static PassWord currentPass;
+	private static Button btnClear;
 	/**
 	 * Launch the application.
 	 * @param args
@@ -108,7 +109,10 @@ public class PassGenWindow {
 					btnAddNew.setVisible(true);
 					buttonPrevious.setVisible(true);
 					buttonNext.setVisible(true);
-					btnGenerate.setVisible(true);;
+					btnGenerate.setVisible(true);
+					btnClear.setVisible(true);
+					currentPass = mainHandle.retreive(0);
+					mainHandle.retreive(0);
 				}	else	{
 					
 				}
@@ -143,14 +147,25 @@ public class PassGenWindow {
 		btnGenerate.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				txtPassword.setText(mainHandle.generateNew());
+				mainHandle.generateNew();
 			}
 		});
 		btnGenerate.setText("Generate");
 		btnGenerate.setVisible(false);
 		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
+		
+		btnClear = new Button(shell, SWT.NONE);
+		btnClear.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mainHandle.clear();
+			}
+		});
+		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		gd_btnClear.widthHint = 44;
+		btnClear.setLayoutData(gd_btnClear);
+		btnClear.setText("Clear");
+		btnClear.setVisible(false);
 		
 		txtOutput = new Text(shell, SWT.BORDER | SWT.WRAP);
 		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
