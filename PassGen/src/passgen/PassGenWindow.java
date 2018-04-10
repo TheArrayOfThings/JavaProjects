@@ -18,20 +18,19 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
 public class PassGenWindow {
-	private static Text textKey;
+	private static Text textKeyPW;
 	private static Text txtPassname;
 	private static Text txtOutput;
-	private static Button btnSetKey;
-	private static Text txtPassword;
+	private static Button btnSubmit;
 	private static Label lblPWName;
-	private static Label lblPinLabel;
-	private static Label lblActualPw;
-	private static Button btnAddNew;
+	private static Label lblLeftLabel;
 	private static Button buttonPrevious;
 	private static Button buttonNext;
 	private static Button btnGenerate;
-	private static PassWord currentPass;
 	private static Button btnClear;
+	private static boolean login = false;
+	private static Button btnRemove;
+	private static Text txtCurr;
 	/**
 	 * Launch the application.
 	 * @param args
@@ -41,28 +40,26 @@ public class PassGenWindow {
 		Display display = Display.getDefault();
 		Shell shell = new Shell();
 		shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shell.setSize(450, 370);
+		shell.setSize(314, 370);
 		shell.setText("SWT Application");
-		shell.setLayout(new GridLayout(4, false));
+		shell.setLayout(new GridLayout(6, false));
 		
 		lblPWName = new Label(shell, SWT.NONE);
 		lblPWName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblPWName.setText("Password Name:");
+		lblPWName.setText("Pass Name:");
 		lblPWName.setVisible(false);
 		
 		txtPassname = new Text(shell, SWT.BORDER);
-		txtPassname.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridData gd_txtPassname = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+		gd_txtPassname.widthHint = 124;
+		txtPassname.setLayoutData(gd_txtPassname);
 		txtPassname.setVisible(false);
 		
 		buttonPrevious = new Button(shell, SWT.NONE);
 		buttonPrevious.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (currentPass == null) {
-					currentPass = mainHandle.retreive(0);
-				}	else	{
-					currentPass = mainHandle.retreive(currentPass.returnIndex() - 1);
-				}
+				mainHandle.retreive(Integer.valueOf(txtCurr.getText()) - 1);
 			}
 		});
 		buttonPrevious.setText("<");
@@ -72,78 +69,53 @@ public class PassGenWindow {
 		buttonNext.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (currentPass == null) {
-					currentPass = mainHandle.retreive(0);
-				}	else	{
-					currentPass = mainHandle.retreive(currentPass.returnIndex() + 1);
-				}
-
+				mainHandle.retreive(Integer.valueOf(txtCurr.getText()) + 1);
 			}
 		});
 		buttonNext.setText(">");
 		buttonNext.setVisible(false);
 		
-		lblPinLabel = new Label(shell, SWT.NONE);
-		lblPinLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblPinLabel.setText("Pin:");
-		lblPinLabel.setVisible(true);
+		lblLeftLabel = new Label(shell, SWT.NONE);
+		lblLeftLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblLeftLabel.setText("Pin:");
 		
-		textKey = new Text(shell, SWT.BORDER);
-		GridData gd_txtKey = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_txtKey.widthHint = 45;
-		textKey.setLayoutData(gd_txtKey);
+		textKeyPW = new Text(shell, SWT.BORDER);
+		GridData gd_textKeyPW = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+		gd_textKeyPW.widthHint = 131;
+		textKeyPW.setLayoutData(gd_textKeyPW);
 		
-		btnSetKey = new Button(shell, SWT.NONE);
-		btnSetKey.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		btnSetKey.addMouseListener(new MouseAdapter() {
+		btnSubmit = new Button(shell, SWT.NONE);
+		GridData gd_btnSubmit = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		gd_btnSubmit.widthHint = 49;
+		btnSubmit.setLayoutData(gd_btnSubmit);
+		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (mainHandle.pinEntry())	{
-					lblPinLabel.setVisible(false);
-					textKey.setVisible(false);
-					btnSetKey.setVisible(false);
-					txtPassname.setVisible(true);
-					lblPWName.setVisible(true);
-					lblActualPw.setVisible(true);
-					txtPassword.setVisible(true);
-					btnAddNew.setVisible(true);
-					buttonPrevious.setVisible(true);
-					buttonNext.setVisible(true);
-					btnGenerate.setVisible(true);
-					btnClear.setVisible(true);
-					currentPass = mainHandle.retreive(0);
-					mainHandle.retreive(0);
+				if (login == false) {
+					if (mainHandle.pinEntry())	{
+						lblLeftLabel.setText("Password");
+						txtPassname.setVisible(true);
+						lblPWName.setVisible(true);
+						textKeyPW.setText("");
+						buttonPrevious.setVisible(true);
+						buttonNext.setVisible(true);
+						btnGenerate.setVisible(true);
+						btnRemove.setVisible(true);
+						btnClear.setVisible(true);
+						txtCurr.setText("0");
+						mainHandle.retreive(0);
+						login = true;
+					}
 				}	else	{
-					
+					mainHandle.addNew();
+					mainHandle.retreive(mainHandle.getTotal());
 				}
-
 			}
 		});
-		btnSetKey.setText("Submit");
-		
-		lblActualPw = new Label(shell, SWT.NONE);
-		lblActualPw.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblActualPw.setText("Password:");
-		lblActualPw.setVisible(false);
-		
-		txtPassword = new Text(shell, SWT.BORDER);
-		txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		txtPassword.setVisible(false);
-		
-		btnAddNew = new Button(shell, SWT.NONE);
-		GridData gd_btnAddNew = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
-		gd_btnAddNew.widthHint = 47;
-		btnAddNew.setLayoutData(gd_btnAddNew);
-		btnAddNew.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				mainHandle.addNew();
-			}
-		});
-		btnAddNew.setText("Submit");
-		btnAddNew.setVisible(false);
+		btnSubmit.setText("Submit");
 		
 		btnGenerate = new Button(shell, SWT.NONE);
+		btnGenerate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		btnGenerate.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -152,29 +124,54 @@ public class PassGenWindow {
 		});
 		btnGenerate.setText("Generate");
 		btnGenerate.setVisible(false);
-		new Label(shell, SWT.NONE);
+		
+		btnRemove = new Button(shell, SWT.NONE);
+		btnRemove.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mainHandle.remove(Integer.valueOf(txtCurr.getText()));
+				mainHandle.retreive(0);
+			}
+		});
+		GridData gd_btnRemove = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnRemove.widthHint = 61;
+		btnRemove.setLayoutData(gd_btnRemove);
+		btnRemove.setText("Remove");
+		btnRemove.setVisible(false);
 		
 		btnClear = new Button(shell, SWT.NONE);
 		btnClear.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				mainHandle.clear();
+				txtCurr.setText("-1");
 			}
 		});
-		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
-		gd_btnClear.widthHint = 44;
+		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_btnClear.widthHint = 61;
 		btnClear.setLayoutData(gd_btnClear);
 		btnClear.setText("Clear");
 		btnClear.setVisible(false);
-		
-		txtOutput = new Text(shell, SWT.BORDER | SWT.WRAP);
-		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_txtOutput.widthHint = 350;
-		gd_txtOutput.heightHint = 157;
-		txtOutput.setLayoutData(gd_txtOutput);
+		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
 		
-		mainHandle.initialise(textKey, txtOutput, txtPassname, txtPassword);
+		txtCurr = new Text(shell, SWT.BORDER);
+		txtCurr.setText("curr");
+		txtCurr.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		txtOutput = new Text(shell, SWT.BORDER | SWT.WRAP);
+		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
+		gd_txtOutput.widthHint = 257;
+		gd_txtOutput.heightHint = 204;
+		txtOutput.setLayoutData(gd_txtOutput);
+		
+		mainHandle.initialise(txtPassname, textKeyPW, txtOutput, txtCurr);
+		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
 		
 		shell.open();
 		shell.layout();

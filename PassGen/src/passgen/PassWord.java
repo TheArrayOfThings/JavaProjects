@@ -9,13 +9,10 @@ public class PassWord {
 		pName = namePara.trim();
 		password = passwordPara.trim();
 	}
-	public String returnName()	{
+	public String getName()	{
 		return pName;
 	}
-	public String returnPass()	{
+	public String getPass()	{
 		return password;
-	}
-	public int returnIndex()	{
-		return index;
 	}
 }
