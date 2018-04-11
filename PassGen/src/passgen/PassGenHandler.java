@@ -21,15 +21,14 @@ public class PassGenHandler {
 	private Text outputText;
 	private Text keyPWText;
 	private Text passNameText;
-	private Text currentText;
+	private int selected = -1;
 	private PassWord[] passBook = new PassWord[2];
 	private File savedPass = new File("SavedPasses.txt");
 	private Scanner passScanner;
-	public void initialise(Text passNamePara, Text keyPWTextPara, Text outputTextPara, Text currentTextPara)	{
+	public void initialise(Text passNamePara, Text keyPWTextPara, Text outputTextPara)	{
 		keyPWText = keyPWTextPara;
 		outputText = outputTextPara;
 		passNameText = passNamePara;
-		currentText = currentTextPara;
 		if (!(savedPass.exists()))	{
 			outputText.setText("Please enter a 4-digit encryption key and press 'Submit' \r\n"
 					+ "You will have to remember this code! \r\n"
@@ -52,7 +51,7 @@ public class PassGenHandler {
 				if (passBook.length >= totalPasses) {
 					this.doubleArray();
 				}
-				passBook[totalPasses] = new PassWord(totalPasses, this.decrypt(passScanner.nextLine()), this.decrypt(passScanner.nextLine()));
+				passBook[totalPasses] = new PassWord(this.decrypt(passScanner.nextLine()), this.decrypt(passScanner.nextLine()));
 				totalPasses++;
 			}
 			passScanner.close();
@@ -67,11 +66,19 @@ public class PassGenHandler {
 				passOutput.println(this.encrypt(passBook[i].getName()));
 				passOutput.println(this.encrypt(passBook[i].getPass()));
 				}
+			this.printAll();
 			passOutput.close();
 			savedPass.setWritable(false);
 		} catch (FileNotFoundException unknown2) {
 			outputText.setText("Unknown error: " + unknown2);
 		}
+	}
+	private void printAll()	{
+		String printAll = "Passwords: \n\r \n\r";
+		for (int i = 0; i < totalPasses; i++) {
+			printAll += passBook[i].getName() + "\n\r";
+			}
+		outputText.setText(printAll);
 	}
 	private void setKey()	{
 		encrypt1 = Integer.parseInt(keyPWText.getText().substring(0,1));
@@ -98,10 +105,10 @@ public class PassGenHandler {
 					if (tries < 1) {
 						passScanner.close();
 						if (savedPass.delete()) {
-							outputText.setText("Tries exceeded: password records deleted. \r/n"
+							outputText.setText("Tries exceeded: password records deleted. \r\n"
 									+ "Please enter a new PIN to create a new password file.");
 						}	else	{
-							outputText.setText("Tries exceeded: password records not deleted. \r/n"
+							outputText.setText("Tries exceeded: password records not deleted. \r\n"
 									+ "Please standby!");
 						}
 						return false;
@@ -118,22 +125,39 @@ public class PassGenHandler {
 			}
 		}
 	private void setCurrent(int toSet)	{
+		if (toSet >= totalPasses)	{
+			toSet = totalPasses - 1;
+		}	else if (toSet < 0)	{
+			toSet = 0;
+		}
 		passNameText.setText(passBook[toSet].getName());
 		keyPWText.setText(passBook[toSet].getPass());
-		currentText.setText(String.valueOf(toSet));
+		selected = toSet;
 	}
 	public void clear()	{
 		passNameText.setText("");
 		keyPWText.setText("");
+		selected = -1;
 	}
-	public void retreive(int toRetreivePara)	{
-		if (toRetreivePara < totalPasses && toRetreivePara >= 0 && totalPasses > 0) {
-			this.setCurrent(toRetreivePara);
-		}	else if (toRetreivePara >= totalPasses && toRetreivePara != 0 && totalPasses > 0)	{
-			this.setCurrent(totalPasses - 1);
-		}	else if (totalPasses > 0)	{
-			this.setCurrent(0);
+	public void retreive(int retreivePara)	{
+		if (totalPasses == 0) {
+			return;
 		}
+		switch(retreivePara)	{
+		case 1:
+			this.setCurrent(selected + 1);
+			break;
+		case -1:
+			this.setCurrent(selected - 1);
+			break;
+		case 3:
+			this.setCurrent(totalPasses);
+			break;
+		default:
+			this.setCurrent(0);
+			break;
+		}
+		this.printAll();
 	}
 	private void doubleArray()	{
 		PassWord[] tempBook = new PassWord[passBook.length*2];
@@ -154,10 +178,11 @@ public class PassGenHandler {
 			else if (passNameText.getText().trim().equals("") || keyPWText.getText().trim().equals(""))	{
 			outputText.setText("Please add a name and generate a password!");
 		}	else	{
-			passBook[totalPasses] = new PassWord(totalPasses, passNameText.getText(), keyPWText.getText());
+			passBook[totalPasses] = new PassWord(passNameText.getText(), keyPWText.getText());
 			totalPasses++;
 			outputText.setText("New password added sucessfully!");
 			this.exportAll();
+			this.retreive(3);
 		}
 	}
 	public void generateNew()	{
@@ -171,10 +196,10 @@ public class PassGenHandler {
 			outputText.setText("Please press 'clear' before generating a new password!");
 		}
 	}
-	public void remove(int toRemove)	{ //Removes a password object.
-		if (toRemove >= 0 && toRemove <= totalPasses) {
+	public void remove()	{ //Removes a password object.
+		if (selected >= 0 && selected <= totalPasses) {
 			PassWord[] tempBook = new PassWord[totalPasses];
-			passBook[toRemove] = null;
+			passBook[selected] = null;
 			int j = 0;
 			for (int i = 0; i<totalPasses; ++i)	{
 				if (passBook[i] != null) {

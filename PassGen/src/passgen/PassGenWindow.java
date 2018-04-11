@@ -30,7 +30,6 @@ public class PassGenWindow {
 	private static Button btnClear;
 	private static boolean login = false;
 	private static Button btnRemove;
-	private static Text txtCurr;
 	/**
 	 * Launch the application.
 	 * @param args
@@ -40,7 +39,7 @@ public class PassGenWindow {
 		Display display = Display.getDefault();
 		Shell shell = new Shell();
 		shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shell.setSize(314, 370);
+		shell.setSize(374, 415);
 		shell.setText("SWT Application");
 		shell.setLayout(new GridLayout(6, false));
 		
@@ -59,7 +58,7 @@ public class PassGenWindow {
 		buttonPrevious.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				mainHandle.retreive(Integer.valueOf(txtCurr.getText()) - 1);
+				mainHandle.retreive(-1);
 			}
 		});
 		buttonPrevious.setText("<");
@@ -69,7 +68,7 @@ public class PassGenWindow {
 		buttonNext.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				mainHandle.retreive(Integer.valueOf(txtCurr.getText()) + 1);
+				mainHandle.retreive(1);
 			}
 		});
 		buttonNext.setText(">");
@@ -102,13 +101,11 @@ public class PassGenWindow {
 						btnGenerate.setVisible(true);
 						btnRemove.setVisible(true);
 						btnClear.setVisible(true);
-						txtCurr.setText("0");
 						mainHandle.retreive(0);
 						login = true;
 					}
 				}	else	{
 					mainHandle.addNew();
-					mainHandle.retreive(mainHandle.getTotal());
 				}
 			}
 		});
@@ -129,8 +126,7 @@ public class PassGenWindow {
 		btnRemove.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				mainHandle.remove(Integer.valueOf(txtCurr.getText()));
-				mainHandle.retreive(0);
+				mainHandle.remove();
 			}
 		});
 		GridData gd_btnRemove = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
@@ -144,7 +140,6 @@ public class PassGenWindow {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				mainHandle.clear();
-				txtCurr.setText("-1");
 			}
 		});
 		GridData gd_btnClear = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
@@ -154,24 +149,16 @@ public class PassGenWindow {
 		btnClear.setVisible(false);
 		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
+		new Label(shell, SWT.NONE);
 		
-		txtCurr = new Text(shell, SWT.BORDER);
-		txtCurr.setText("curr");
-		txtCurr.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		txtOutput = new Text(shell, SWT.BORDER | SWT.WRAP);
-		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
+		txtOutput = new Text(shell, SWT.READ_ONLY | SWT.BORDER |SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
 		gd_txtOutput.widthHint = 257;
-		gd_txtOutput.heightHint = 204;
+		gd_txtOutput.heightHint = 228;
 		txtOutput.setLayoutData(gd_txtOutput);
 		
-		mainHandle.initialise(txtPassname, textKeyPW, txtOutput, txtCurr);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
-		new Label(shell, SWT.NONE);
+		mainHandle.initialise(txtPassname, textKeyPW, txtOutput);
 		
 		shell.open();
 		shell.layout();
