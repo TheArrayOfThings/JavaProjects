@@ -4,9 +4,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.wb.swt.SWTResourceManager;
-
-import java.io.IOException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Label;
@@ -14,8 +11,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 
 public class PassGenWindow {
 	private static Text textKeyPW;
@@ -28,7 +23,6 @@ public class PassGenWindow {
 	private static Button buttonNext;
 	private static Button btnGenerate;
 	private static Button btnClear;
-	private static boolean login = false;
 	private static Button btnRemove;
 	/**
 	 * Launch the application.
@@ -38,6 +32,7 @@ public class PassGenWindow {
 		final PassGenHandler mainHandle = new PassGenHandler();
 		Display display = Display.getDefault();
 		Shell shell = new Shell();
+		shell.setImage(SWTResourceManager.getImage(PassGenWindow.class, "/resources/LogoBasic.png"));
 		shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shell.setSize(374, 415);
 		shell.setText("SWT Application");
@@ -90,23 +85,16 @@ public class PassGenWindow {
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				if (login == false) {
-					if (mainHandle.pinEntry())	{
+					if (mainHandle.submit())	{
 						lblLeftLabel.setText("Password");
 						txtPassname.setVisible(true);
 						lblPWName.setVisible(true);
-						textKeyPW.setText("");
 						buttonPrevious.setVisible(true);
 						buttonNext.setVisible(true);
 						btnGenerate.setVisible(true);
 						btnRemove.setVisible(true);
 						btnClear.setVisible(true);
-						mainHandle.retreive(0);
-						login = true;
 					}
-				}	else	{
-					mainHandle.addNew();
-				}
 			}
 		});
 		btnSubmit.setText("Submit");

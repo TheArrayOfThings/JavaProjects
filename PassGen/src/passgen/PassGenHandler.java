@@ -1,26 +1,19 @@
 package passgen;
 import java.io.*;
-
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import java.util.Scanner;
 import java.util.Random;
+import java.util.concurrent.*;
 
 public class PassGenHandler {
 	private String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ \"";
 	Random random = new Random();
 	private String decryptWord = "RyanRules";
 	private String firstLine = "";
-	private int encrypt1 = 0;
-	private int encrypt2 = 0;
-	private int encrypt3 = 0;
-	private int encrypt4 = 0;
-	private int totalPasses = 0;
+	private int encrypt1 = 0, encrypt2 = 0, encrypt3 = 0, encrypt4 = 0, totalPasses = 0, disabled = 0;
+	private boolean login = false;
 	private int tries = 10;
-	private Text outputText;
-	private Text keyPWText;
-	private Text passNameText;
+	private Text outputText, keyPWText, passNameText;
 	private int selected = -1;
 	private PassWord[] passBook = new PassWord[2];
 	private File savedPass = new File("SavedPasses.txt");
@@ -86,33 +79,47 @@ public class PassGenHandler {
 		encrypt3 = Integer.parseInt(keyPWText.getText().substring(2,3));
 		encrypt4 = Integer.parseInt(keyPWText.getText().substring(3,4));
 	}
-	public Boolean pinEntry()	{
-		if ((!(savedPass.exists())) && this.valid())	{
+	public Boolean submit()	{
+		if (login == true) {
+			this.addNew();
+			return true;
+		}	if ((!(savedPass.exists())) && this.valid() && disabled != 1)	{
 			this.setKey();
 			outputText.setText("Pin set to " + keyPWText.getText());
 			this.exportAll();
+			this.retreive(0);
+			login = true;
 			return true;
-			}
-		else	{
+			}	else	{
 			if (this.valid())	{ //Makes sure the pin is valid before checking it
 				this.setKey(); //Sets the key to the currently entered pin value
 				if (this.decrypt(firstLine).equals(decryptWord)) { //Pin accepted
 					outputText.setText("PIN accepted!");
 					this.importAll(); //Imports password book. Will only do this if PIN is accepted. 
+					this.retreive(0);
+					login = true;
 					return true;
-				}	else	{
+				}	else if (disabled == 0)	{
 					--tries;
 					if (tries < 1) {
 						passScanner.close();
-						if (savedPass.delete()) {
-							outputText.setText("Tries exceeded: password records deleted. \r\n"
-									+ "Please enter a new PIN to create a new password file.");
-						}	else	{
-							outputText.setText("Tries exceeded: password records not deleted. \r\n"
-									+ "Please standby!");
-						}
+						savedPass.delete();
+						savedPass.deleteOnExit();
+						outputText.setText("Tries exceeded: password records deleted. \r\n"
+								+ "This program will terminate in 10 seconds.");
+						disabled = 1;
+						new Thread( new Runnable() {
+							public void run()  {
+								try {
+									TimeUnit.SECONDS.sleep(10);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+										}
+								System.exit(1);
+								}
+							} ).start();
 						return false;
-					}	else	{
+						}	else	{
 						outputText.setText("PIN incorrect, please try again. \r\n"
 								+ "You have " + tries + " tries remaining. \r\n"
 										+ "Your saved passwords will be deleted if this number is exceeded.");
@@ -122,8 +129,9 @@ public class PassGenHandler {
 			}	else	{
 				return false;
 			}
-			}
 		}
+		return false;
+	}
 	private void setCurrent(int toSet)	{
 		if (toSet >= totalPasses)	{
 			toSet = totalPasses - 1;
@@ -140,7 +148,8 @@ public class PassGenHandler {
 		selected = -1;
 	}
 	public void retreive(int retreivePara)	{
-		if (totalPasses == 0) {
+		if (totalPasses <= 0) {
+			this.clear();
 			return;
 		}
 		switch(retreivePara)	{
@@ -209,6 +218,7 @@ public class PassGenHandler {
 			}
 			passBook = tempBook;
 			--totalPasses;
+			this.retreive(0);
 			this.exportAll();
 		}	else	{
 			outputText.setText("Cannot remove!");
