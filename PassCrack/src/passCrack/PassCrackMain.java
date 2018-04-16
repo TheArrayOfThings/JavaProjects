@@ -1,11 +1,15 @@
+package passCrack;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Button;
-import java.io.*;
-import java.util.logging.*;
+import java.util.Random;
+import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -20,11 +24,16 @@ public class PassCrackMain {
 
 	protected Shell shlPasscrack;
 	private Button btnPasscrack;
-	public Label outputLabel;
-	private Text passInput;
+	public static Label outputLabel;
+	private static Text passInput;
 	private Label lblEnterPassword;
-	PassCracker passCrackObj = new PassCracker();
-	Logger logger = Logger.getAnonymousLogger();
+	static double startTime = 0, endTime = 0,totalTime = 0, restartTime = 0, newTime = 0;
+	static String password = "", guess = "", returnString = "";
+	static final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ \"";
+	static  final Random random = new Random();
+	static int length = 0;
+	static long tries = 0;
+	Scanner conInput = new Scanner (System.in);
 	DecimalFormat triesFormat = new DecimalFormat("#");
 	/**
 	 * Launch the application.
@@ -53,22 +62,60 @@ public class PassCrackMain {
 			}
 		}
 	}
+	public static void start()	{
+		tries = 0;
+		startTime = System.currentTimeMillis();
+		newTime = System.currentTimeMillis();
+		outputLabel.setText("Working...");
+		guess();
+		display();
+	}
 	
-	public void displayCrack()	{ //function that handles displaying the crack results
-		if ((!passInput.getText().trim().equals("")))	{
-			try {
-				PassObject passObject = passCrackObj.crack(passInput.getText().trim());
-				outputLabel.setText(
-						"Final guess: " + passObject.getGuess() + "\n" +
-						"Time taken: " + Double.toString(passObject.getTime()) + " seconds" + "\n" + 
-						"This took " + String.valueOf(triesFormat.format(passObject.getTries())) + " tries" + "\n"
-						);
-			} catch (IOException e1) {
-				Exception e2 = new Exception(e1);
-				logger.log(Level.SEVERE, "Something happened: ", e2);
-				e1.printStackTrace();
+	public static void guess()	{
+		password = passInput.getText().trim();
+		length = password.length();
+		Thread guessThread = new Thread()	{
+			public void run()	{
+		    	while (!(guess.equals(password))) {
+		    		guess = "";
+		    		++tries;
+					while (guess.length() != password.length())	{
+						guess += chars.charAt(random.nextInt(chars.length()));
+					}
+		    	}
 			}
-		}
+		};
+		guessThread.start();
+	}
+	private static void display()	{
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				if (!(password.equals(guess)))	{
+					if (newTime - restartTime > 1000) {
+						restartTime = System.currentTimeMillis();
+						outputLabel.setText(outputLabel.getText() + " ...");
+					}
+					newTime = System.currentTimeMillis();
+					display();
+				}	else	{
+					endTime = System.currentTimeMillis();
+					totalTime = endTime - startTime;
+					returnString = ("The password was: " + guess + System.getProperty("line.separator"));
+					returnString += ("The program took " + (totalTime / 1000) + " seconds to complete." + System.getProperty("line.separator"));
+					returnString += ("This program took " + tries + " tries to guess the password." + System.getProperty("line.separator"));
+					try {
+						PrintWriter output;
+						output = new PrintWriter(new FileWriter("PassCrack_Output.txt", true));
+						output.println(returnString);
+						output.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					outputLabel.setText(returnString);
+				}
+			}
+		});
 	}
 
 	/**
@@ -92,7 +139,7 @@ public class PassCrackMain {
 		btnPasscrack.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(MouseEvent e) {
-				displayCrack();
+				start();
 			}
 		});
 		btnPasscrack.setBounds(163, 262, 75, 25);
@@ -109,7 +156,7 @@ public class PassCrackMain {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.character == SWT.CR)	{
-					displayCrack();
+					start();
 				}
 			}
 		});
@@ -119,6 +166,5 @@ public class PassCrackMain {
 		lblEnterPassword.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblEnterPassword.setBounds(10, 243, 87, 15);
 		lblEnterPassword.setText("Enter Password:");
-
 	}
 }
