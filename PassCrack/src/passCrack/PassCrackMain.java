@@ -18,13 +18,15 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 
 
 public class PassCrackMain {
 
 	protected Shell shlPasscrack;
 	private Button btnPasscrack;
-	public static Label outputLabel;
+	public static Text outputText;
 	private static Text passInput;
 	private Label lblEnterPassword;
 	static double startTime = 0, endTime = 0,totalTime = 0, restartTime = 0, newTime = 0;
@@ -66,7 +68,7 @@ public class PassCrackMain {
 		tries = 0;
 		startTime = System.currentTimeMillis();
 		newTime = System.currentTimeMillis();
-		outputLabel.setText("Working...");
+		outputText.setText("Working...");
 		guess();
 		display();
 	}
@@ -93,7 +95,7 @@ public class PassCrackMain {
 				if (!(password.equals(guess)))	{
 					if (newTime - restartTime > 1000) {
 						restartTime = System.currentTimeMillis();
-						outputLabel.setText(outputLabel.getText() + " ...");
+						outputText.setText(outputText.getText() + " ...");
 					}
 					newTime = System.currentTimeMillis();
 					display();
@@ -112,7 +114,7 @@ public class PassCrackMain {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					outputLabel.setText(returnString);
+					outputText.setText(returnString);
 				}
 			}
 		});
@@ -125,9 +127,32 @@ public class PassCrackMain {
 		shlPasscrack = new Shell();
 		shlPasscrack.setImage(SWTResourceManager.getImage("H:\\Stuff\\HTML\\Images\\LogoBasic.png"));
 		shlPasscrack.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlPasscrack.setSize(400, 384);
+		shlPasscrack.setSize(336, 305);
 		shlPasscrack.setText("PassCrack");
-		shlPasscrack.setLayout(null);
+		shlPasscrack.setLayout(new GridLayout(3, false));
+		
+		outputText = new Text(shlPasscrack, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+		GridData gd_outputLabel = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 2);
+		gd_outputLabel.widthHint = 283;
+		outputText.setLayoutData(gd_outputLabel);
+		outputText.setToolTipText("Output window");
+		outputText.setText("This program will take your password and brute-force crack it by adding random characters together.\r\n\r\nThis can be useful for testing how good your password is.\r\n\r\nI recommend that you test it with small passwords (2-3 characters long) at first.\r\n \r\nLonger passwords will take a VERY long time to complete. \r\n\r\nThe outcomes of the various 'PassCracks' are stored in 'PassCrack_Output.txt'.");
+		outputText.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		
+		lblEnterPassword = new Label(shlPasscrack, SWT.NONE);
+		lblEnterPassword.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		lblEnterPassword.setText("Enter Password:");
+		
+		passInput = new Text(shlPasscrack, SWT.BORDER);
+		passInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		passInput.addKeyListener(new KeyAdapter() { //used to activate with enter press. 
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.character == SWT.CR)	{
+					start();
+				}
+			}
+		});
 
 		
 		btnPasscrack = new Button(shlPasscrack, SWT.NONE);
@@ -142,29 +167,6 @@ public class PassCrackMain {
 				start();
 			}
 		});
-		btnPasscrack.setBounds(163, 262, 75, 25);
 		btnPasscrack.setText("PassCrack");
-		
-		outputLabel = new Label(shlPasscrack, SWT.WRAP);
-		outputLabel.setToolTipText("Output window");
-		outputLabel.setText("This program will take your password and brute-force crack it by adding random characters together.\r\n\r\nThis can be useful for testing how good your password is.\r\n\r\nI recommend that you test it with small passwords (2-3 characters long) at first.\r\n \r\nLonger passwords will take a VERY long time to complete. \r\n\r\nThe outcomes of the various 'PassCracks' are stored in 'PassCrack_Output.txt'.");
-		outputLabel.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		outputLabel.setBounds(10, 10, 364, 227);
-		
-		passInput = new Text(shlPasscrack, SWT.BORDER);
-		passInput.addKeyListener(new KeyAdapter() { //used to activate with enter press. 
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if(e.character == SWT.CR)	{
-					start();
-				}
-			}
-		});
-		passInput.setBounds(10, 264, 147, 21);
-		
-		lblEnterPassword = new Label(shlPasscrack, SWT.NONE);
-		lblEnterPassword.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblEnterPassword.setBounds(10, 243, 87, 15);
-		lblEnterPassword.setText("Enter Password:");
 	}
 }
