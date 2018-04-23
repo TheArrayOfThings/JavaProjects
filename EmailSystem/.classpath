@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.swt"/>
+	<classpathentry kind="lib" path="javax.mail.jar"/>
+	<classpathentry kind="lib" path="jotlmsg-1.2.1.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-3.16.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-examples-3.16.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-excelant-3.16.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-ooxml-3.16.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-ooxml-schemas-3.16.jar"/>
+	<classpathentry kind="lib" path="H:/Downloads/poi-3.16/poi-scratchpad-3.16.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
