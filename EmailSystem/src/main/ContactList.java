@@ -143,7 +143,7 @@ public class ContactList {
 		currentColumn = 0;
 		if (emailFound && idFound && nameFound)	{
 			for (int c = 0; c < total; ++c)	{
-				contactBook[c] = new Contact(names[c], studentIDs[c], emails[c]);
+				contactBook[c] = new Contact(names[c].trim(), studentIDs[c].trim(), emails[c].trim());
 			}
 			importSuccess = true;
 		}
