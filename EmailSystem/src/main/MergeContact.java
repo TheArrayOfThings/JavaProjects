@@ -1,13 +1,13 @@
 package main;
 
-public class Contact {
+public class MergeContact {
 	private String name = "";
 	private String studentID = "";
 	private String email = "";
-	Contact(String namePara, String studentIDPara, String emailPara)	{
-		name = namePara;
-		studentID = studentIDPara;
-		email = emailPara;
+	MergeContact(String namePara, String studentIDPara, String emailPara)	{
+		name = namePara.trim();
+		studentID = studentIDPara.trim();
+		email = emailPara.trim();
 	}
 	public String getName()	{
 		return name;
@@ -18,5 +18,4 @@ public class Contact {
 	public String getEmail()	{
 		return email;
 	}
-
 }

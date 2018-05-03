@@ -42,7 +42,7 @@ public class Confirm {
 		
 		txtAreYouSure = new Text(confirmShell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		txtAreYouSure.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		txtAreYouSure.setText("Are you sure that you want to send?\r\n\r\nIf you click 'yes'; the program will send out the emails immediately.\r\n\r\nMake sure you previewed your email before you send!");
+		txtAreYouSure.setText("Are you sure that you want to send?\r\n\r\nIf you click 'yes' the program will send out the emails immediately.\r\n\r\n**Please preview before sending any emails!**");
 		GridData gd_txtAreYouSure = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		gd_txtAreYouSure.heightHint = 146;
 		txtAreYouSure.setLayoutData(gd_txtAreYouSure);
@@ -70,7 +70,6 @@ public class Confirm {
 		btnNo.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				EmailWindow.txtSystem.setText("Aborted sending emails sucessfully!");
 				confirmShell.close();
 			}
 		});

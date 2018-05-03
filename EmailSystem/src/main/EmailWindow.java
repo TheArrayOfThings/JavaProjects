@@ -6,11 +6,11 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.wb.swt.SWTResourceManager;
-
-import encrypter.Encrypter;
 import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
 import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
+import microsoft.exchange.webservices.data.core.enumeration.search.ResolveNameSearchLocation;
+import microsoft.exchange.webservices.data.core.exception.service.remote.ServiceRequestException;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
@@ -20,14 +20,8 @@ import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.search.FindFoldersResults;
 import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import microsoft.exchange.webservices.data.misc.NameResolutionCollection;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Label;
@@ -36,8 +30,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Multipart;
 import javax.mail.Session;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -55,71 +60,39 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.custom.StyledText;
 
 public class EmailWindow {
-	private static Text txtMain;
-	private static Text txtSubject;
-	private static Button btnPreview;
-	private static Button btnSend;
-	private static Button btnPrevious;
-	private static Button btnNext;
-	private static Label lblDear;
-	private static Label lblStudentId;
-	private static Text txtName;
-	private static Text txtSID;
-	private static Label lblEmail;
-	private static Text txtEmail;
-	private static Label lblInbox;
-	private static Button btnImport;
+	private static Text txtMain, txtSubject, txtName, txtSID, txtEmail, txtAttachment;
+	private static Button btnPreview, btnSend, btnPrevious, btnNext, btnImport, btnAddAttachment, btnRemoveAttachment;;
+	private static Label lblDear, lblStudentId, lblEmail, lblInbox, lblAttachment;
+	private static StyledText txtSystem;
 	private static ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 	private static String loginEmail = "";
 	private static String loginPassword = "";
-	private static Label lblSubject;
-	private static Label lblYourName;
-	private static Text txtUser;
-	public static StyledText txtSystem;
-	private static Button btnAddAttachment;
-	private static Label lblAttachment;
-	private static Text txtAttachment;
 	private static Combo comboDropDownIS;
 	private static ContactList contacts = new ContactList();
-	static boolean importFinished = false, sent = false, attachmentAdded = false, outofMemory = false, credentialsAccepted = false;
+	private static boolean sent = false, attachmentAdded = false, runError = false, credentialsAccepted = false;
+	public static boolean importFinished = false;
 	private static ScheduledExecutorService refreshService;
-	static String inbox = "", userName = "", emailBody = "", subject = "", logString = "", attachmentLocation = "";
-	static String errorString = "";
-	static Logger logger = Logger.getLogger(EmailWindow.class);
-	static Layout logLayout = new PatternLayout();
-	
-	
+	private static String inbox = "", userName = "", emailBody = "", subject = "", attachmentLocation = "", errorString = "", tempString = "";
+	private static String dLine = System.getProperty("line.separator") + System.getProperty("line.separator");
 
-	/**
-	 * Launch the application.
-	 * @param args
-	 * @throws FileNotFoundException 
-	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		BasicConfigurator.configure();
 		Display display = Display.getDefault();
 		try {
-			service.setUrl(new URI("")); // URI needs to be set for institution.
+			File url = new File(".\\URL.txt");
+			if (url.exists())	{
+				Scanner urlScanner = new Scanner(url);
+				service.setUrl(new URI(urlScanner.nextLine()));
+				urlScanner.close();
+			}
 			} catch (URISyntaxException e2) {
 				e2.printStackTrace();
 				}
-			File credentialFile = new File("Credentials.txt");
-			if (credentialFile.exists())	{
-				Encrypter decrypt = new Encrypter(1234); //Set a pin
-				Scanner credentialScanner = new Scanner(credentialFile);
-				loginEmail = decrypt.decrypt(credentialScanner.nextLine());
-				loginPassword = decrypt.decrypt(credentialScanner.nextLine());
-				credentialScanner.close();
-				if (credCheck())	{
-					credentialsAccepted = true;
-				}
-			}
 			Shell shell = new Shell();
 			shell.setImage(SWTResourceManager.getImage(EmailWindow.class, "/resources/LogoBasic.png"));
 			shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_LIST_BACKGROUND));
-			shell.setSize(650, 388);
-			shell.setText("SWT Application");
-			shell.setLayout(new GridLayout(11, false));
+			shell.setSize(756, 603);
+			shell.setText("Ryan's MailMerger");
+			shell.setLayout(new GridLayout(12, false));
 			
 			lblDear = new Label(shell, SWT.NONE);
 			lblDear.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
@@ -139,12 +112,12 @@ public class EmailWindow {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					if (importFinished) {
-						Contact previous = contacts.getPrevious();
+						MergeContact previous = contacts.getPrevious();
 						txtName.setText(previous.getName());
 						txtSID.setText(previous.getID());
 						txtEmail.setText(previous.getEmail());
 					}	else	{
-						txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please import applicants first!");
+						txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please import applicants first!" + dLine);
 					}
 				}
 			});
@@ -159,26 +132,27 @@ public class EmailWindow {
 					if (importFinished) {
 						setNext();
 					}	else	{
-						txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please import applicants first!");
+						txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please import applicants first!" + dLine);
 					}
 				}
 			});
 			btnNext.setText(">");
 			btnNext.setEnabled(false);
+			
+			lblInbox = new Label(shell, SWT.NONE);
+			lblInbox.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
+			lblInbox.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+			lblInbox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+			lblInbox.setText("Inbox:");
+			
+			comboDropDownIS = new Combo(shell, SWT.DROP_DOWN | SWT.BORDER);
+			comboDropDownIS.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+			comboDropDownIS.add("ukadmissions");
+			comboDropDownIS.add("interviews");
+			comboDropDownIS.setText("ukadmissions");
+			comboDropDownIS.setEnabled(false);
 			new Label(shell, SWT.NONE);
-			
-			lblYourName = new Label(shell, SWT.NONE);
-			lblYourName.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			lblYourName.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblYourName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-			lblYourName.setText("Your Name:");
-			
-			txtUser = new Text(shell, SWT.BORDER);
-			txtUser.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			GridData gd_txtUser = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-			gd_txtUser.widthHint = 74;
-			txtUser.setLayoutData(gd_txtUser);
-			txtUser.setEnabled(false);
+			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			
@@ -196,22 +170,18 @@ public class EmailWindow {
 			txtSID.setEnabled(false);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
-			new Label(shell, SWT.NONE);
 			
-			lblInbox = new Label(shell, SWT.NONE);
-			lblInbox.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			lblInbox.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblInbox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-			lblInbox.setText("Inbox");
+			lblAttachment = new Label(shell, SWT.NONE);
+			lblAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
+			lblAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+			lblAttachment.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+			lblAttachment.setText("Attachment:");
 			
-			comboDropDownIS = new Combo(shell, SWT.DROP_DOWN | SWT.BORDER);
-			comboDropDownIS.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			comboDropDownIS.add("ukadmissions");
-			comboDropDownIS.add("interviews");
-			comboDropDownIS.setText("ukadmissions");
-			comboDropDownIS.setEnabled(false);
-			new Label(shell, SWT.NONE);
-			new Label(shell, SWT.NONE);
+			txtAttachment = new Text(shell, SWT.BORDER | SWT.READ_ONLY);
+			txtAttachment.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+			txtAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
+			txtAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
+			txtAttachment.setEnabled(false);
 			
 			lblEmail = new Label(shell, SWT.NONE);
 			lblEmail.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
@@ -221,48 +191,80 @@ public class EmailWindow {
 			
 			txtEmail = new Text(shell, SWT.BORDER | SWT.READ_ONLY);
 			txtEmail.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			GridData gd_txtEmail = new GridData(SWT.FILL, SWT.CENTER, true, false, 5, 1);
+			GridData gd_txtEmail = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 			gd_txtEmail.widthHint = 34;
 			txtEmail.setLayoutData(gd_txtEmail);
 			txtEmail.setEnabled(false);
-			
-			lblAttachment = new Label(shell, SWT.NONE);
-			lblAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			lblAttachment.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-			lblAttachment.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblAttachment.setText("Attachment");
-			
-			txtAttachment = new Text(shell, SWT.BORDER);
-			txtAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			txtAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtAttachment.setEnabled(false);
+			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			
-			lblSubject = new Label(shell, SWT.NONE);
-			lblSubject.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			lblSubject.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblSubject.setText("Subject");
+			btnAddAttachment = new Button(shell, SWT.NONE);
+			GridData gd_btnAddAttachment = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
+			gd_btnAddAttachment.widthHint = 53;
+			btnAddAttachment.setLayoutData(gd_btnAddAttachment);
+			btnAddAttachment.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					attachmentLocation = "";
+					attachmentAdded = false;
+					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+					dialog.setFilterExtensions(new String [] {"*.*"});
+					dialog.setFilterPath("H:\\");
+					attachmentLocation = dialog.open();
+					if (attachmentLocation != null)	{
+						txtSystem.setText(txtSystem.getText() + "File: " + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + " added successfully!" + dLine);
+						txtAttachment.setText(attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1));
+						attachmentAdded = true;
+					}
+				}
+			});
+			btnAddAttachment.setText("Add");
+			btnAddAttachment.setEnabled(false);
+			
+			btnRemoveAttachment = new Button(shell, SWT.NONE);
+			btnRemoveAttachment.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					if (attachmentAdded)	{
+						txtSystem.setText(txtSystem.getText() + "File: " + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + " removed successfully!" + dLine);
+					}	else	{
+						txtSystem.setText(txtSystem.getText() + "No attachment to remove!" + dLine);
+					}
+					attachmentLocation = null;
+					attachmentAdded = false;
+					txtAttachment.setText("");
+				}
+			});
+			btnRemoveAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+			btnRemoveAttachment.setText("Remove");
+			btnRemoveAttachment.setEnabled(false);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
 			
 			txtSubject = new Text(shell, SWT.BORDER);
+			txtSubject.setText("[Replace with subject]");
 			txtSubject.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			GridData gd_txtSubject = new GridData(SWT.FILL, SWT.CENTER, true, false, 7, 1);
+			GridData gd_txtSubject = new GridData(SWT.FILL, SWT.CENTER, true, false, 5, 1);
 			gd_txtSubject.widthHint = 40;
 			txtSubject.setLayoutData(gd_txtSubject);
 			txtSubject.setEnabled(false);
 			
 			txtSystem = new StyledText(shell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+			txtSystem.setRightMargin(2);
+			txtSystem.setLeftMargin(2);
 			txtSystem.setTopMargin(10);
-			txtSystem.setAlignment(SWT.CENTER);
 			txtSystem.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 			txtSystem.setSelectionBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 			txtSystem.setSelectionForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-			txtSystem.setText("Hello!\r\n\r\nWelcome to Ryan's MailMerger!\r\n\r\nPlease import your data using the 'Import' button, and selecting an excel spreadsheet. \r\n\r\nRemember to complete your name for the signature!");
+			txtSystem.setText("Welcome to Ryan's MailMerger!\r\n\r\n1): Import your data using the 'Import' button, and selecting an excel spreadsheet. \r\n\r\n2): Add a subject and complete the body. \r\n\r\n3): Preview before sending!\r\n\r\n**Leave 'Kind regards' as the last line!**\r\n\r\n**The words 'Dear [applicant name]' will be inserted automatically at the start of the email!**\r\n\r\n**The signature is automatically added to the email**\r\n\r\n");
 			txtSystem.setDoubleClickEnabled(false);
 			txtSystem.setEditable(false);
 			txtSystem.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 			txtSystem.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-			GridData gd_txtSystem = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 2);
+			GridData gd_txtSystem = new GridData(SWT.FILL, SWT.FILL, true, true, 7, 2);
 			gd_txtSystem.widthHint = 132;
 			txtSystem.setLayoutData(gd_txtSystem);
 			txtSystem.addListener(SWT.Modify, new Listener(){
@@ -272,40 +274,35 @@ public class EmailWindow {
 			});
 			txtSystem.setEnabled(false);
 			
-			contacts.initialise(txtSystem);
-			
 			txtMain = new Text(shell, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 			txtMain.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			txtMain.setText("Body of email.\r\n\r\nKind regards");
-			GridData gd_txtMain = new GridData(SWT.FILL, SWT.FILL, true, false, 8, 1);
-			gd_txtMain.widthHint = 41;
+			txtMain.setText("[Replace with body of email]\r\n\r\nKind regards");
+			GridData gd_txtMain = new GridData(SWT.FILL, SWT.FILL, true, false, 5, 1);
+			gd_txtMain.widthHint = 265;
 			gd_txtMain.heightHint = 190;
 			txtMain.setLayoutData(gd_txtMain);
 			txtMain.setEnabled(false);
 			
 			btnImport = new Button(shell, SWT.NONE);
-			GridData gd_btnImport = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+			GridData gd_btnImport = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 			gd_btnImport.widthHint = 57;
 			btnImport.setLayoutData(gd_btnImport);
 			btnImport.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
-					if (importFinished == false)	{
-						FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-						dialog.setFilterExtensions(new String [] {"*.xlsx"});
-						dialog.setFilterPath("H:\\");
-						String fileLocation = dialog.open();
-						if (fileLocation == null)	{
-							txtSystem.setText("Please select a file to import!");
-						}	else	{
-							disableMain();
-							txtSystem.setText("Import started!");
-							try	{
-								startImport(fileLocation);	
-							} catch (OutOfMemoryError ofm)	{
-								outofMemory = true;
-								errorString = ("Java ran out of memory: " + ofm + System.getProperty("line.separator"));
-							}
+					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+					dialog.setFilterExtensions(new String [] {"*.xlsx"});
+					dialog.setFilterPath("H:\\");
+					String fileLocation = dialog.open();
+					if (fileLocation == null)	{
+						txtSystem.setText(txtSystem.getText() + "Please select a file to import!" + dLine);
+					}	else	{
+						disableMain();
+						try	{
+							startImport(fileLocation);	
+						} catch (OutOfMemoryError ofm)	{
+							runError = true;
+							errorString = ("Java ran out of memory: " + ofm + dLine);
 						}
 					}
 				}
@@ -315,12 +312,13 @@ public class EmailWindow {
 			
 			btnPreview = new Button(shell, SWT.NONE);
 			GridData gd_btnPreview = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-			gd_btnPreview.widthHint = 59;
+			gd_btnPreview.widthHint = 62;
 			btnPreview.setLayoutData(gd_btnPreview);
 			btnPreview.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					setEmailParas();
+					disableMain();
 					preview();
 				}
 			});
@@ -329,20 +327,17 @@ public class EmailWindow {
 			
 			btnSend = new Button(shell, SWT.NONE);
 			GridData gd_btnSend = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-			gd_btnSend.widthHint = 52;
+			gd_btnSend.widthHint = 64;
 			btnSend.setLayoutData(gd_btnSend);
 			btnSend.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					if (importFinished)	{
-						if (txtUser.getText().trim().equals(""))	{
-							txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please type your name before sending to applicants!" + System.getProperty("line.separator") + System.getProperty("line.separator"));
-						}	else if (txtSubject.getText().trim().equals("")) {
-							txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please add a subject before sending to applicants!" + System.getProperty("line.separator") + System.getProperty("line.separator"));
-						}	else if (txtMain.getText().trim().equals("Body of email.\r\n\r\nKind regards"))	{
-							txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please change the body of the email before sending to applicants!" + System.getProperty("line.separator") + System.getProperty("line.separator"));
+						if (txtSubject.getText().trim().equals("[Replace with subject]")) {
+							txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please add a subject before sending to applicants!" + dLine);
+						}	else if (txtMain.getText().trim().equals("[Replace with body of email]\r\n\r\nKind regards"))	{
+							txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please change the body of the email before sending to applicants!" + dLine);
 						}	else	{
-							txtSystem.setText("Sending emails...");
 							try {
 								setEmailParas();
 								Shell confirmShell = new Shell(shell, SWT.TITLE|SWT.SYSTEM_MODAL| SWT.CLOSE | SWT.MAX);
@@ -353,33 +348,17 @@ public class EmailWindow {
 							}
 						}
 					}	else	{
-						txtSystem.setText("Error: " + System.getProperty("line.separator") + "Please import applicants before tyring to send emails!");
+						txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please import applicants before tyring to send emails!" + dLine);
 					}
 				}
 			});
 			btnSend.setText("Send");
 			btnSend.setEnabled(false);
-			
-			btnAddAttachment = new Button(shell, SWT.NONE);
-			btnAddAttachment.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseDown(MouseEvent e) {
-					attachmentLocation = "";
-					attachmentAdded = false;
-					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-					dialog.setFilterExtensions(new String [] {"*.*"});
-					dialog.setFilterPath("H:\\");
-					attachmentLocation = dialog.open();
-					if (!(attachmentLocation.equals("")))	{
-						txtSystem.setText("File: " + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + " added successfully!");
-						txtAttachment.setText(attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1));
-						attachmentAdded = true;
-					}
-				}
-			});
-			btnAddAttachment.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
-			btnAddAttachment.setText("Add Attachment");
-			btnAddAttachment.setEnabled(false);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
@@ -401,7 +380,6 @@ public class EmailWindow {
 	public static void enableMain()	{
 		btnNext.setEnabled(true);
 		btnPrevious.setEnabled(true);
-		txtUser.setEnabled(true);
 		txtSID.setEnabled(true);
 		comboDropDownIS.setEnabled(true);
 		txtEmail.setEnabled(true);
@@ -413,11 +391,11 @@ public class EmailWindow {
 		btnPreview.setEnabled(true);
 		btnSend.setEnabled(true);
 		btnAddAttachment.setEnabled(true);
+		btnRemoveAttachment.setEnabled(true);
 	}
 	public static void disableMain()	{
 		btnNext.setEnabled(false);
 		btnPrevious.setEnabled(false);
-		txtUser.setEnabled(false);
 		txtSID.setEnabled(false);
 		comboDropDownIS.setEnabled(false);
 		txtEmail.setEnabled(false);
@@ -429,18 +407,42 @@ public class EmailWindow {
 		btnPreview.setEnabled(false);
 		btnSend.setEnabled(false);
 		btnAddAttachment.setEnabled(false);
+		btnRemoveAttachment.setEnabled(false);
 	}
 	public static boolean credCheck()	{
 		boolean accepted = false;
 		ExchangeCredentials credentials = new WebCredentials(loginEmail, loginPassword);
-		service.setCredentials(credentials);
 		try {
-			FindFoldersResults credentialCheck = service.findFolders(WellKnownFolderName.Root, new SearchFilter.IsGreaterThan(FolderSchema.TotalCount, 0), new FolderView(10));
+			InternetAddress check = new InternetAddress(loginEmail);
+			check.validate();
+		} catch (AddressException e1) {
+			System.out.println("Invalid address error!");
+			return accepted;
+		}
+		service.setCredentials(credentials);
+		FindFoldersResults credentialCheck;
+		try {
+			credentialCheck = service.findFolders(WellKnownFolderName.Root, new SearchFilter.IsGreaterThan(FolderSchema.TotalCount, 0), new FolderView(10));
 			if (credentialCheck.getTotalCount() > 0) {
 				accepted = true;
+				PrintWriter uriOutput = new PrintWriter(".//URL.txt");
+				uriOutput.println(service.getUrl().toString());
+				uriOutput.close();
+				}
+		} catch (ServiceRequestException e) {
+			if (e.toString().indexOf("401") == -1)	{
+				System.out.println("Suspected URI error: " + e.toString());
+				try {
+					service.autodiscoverUrl(loginEmail);
+					return credCheck();
+				} catch (Exception e1) {
+					System.out.println("URI Autodiscover error: " + e1.toString());
+				}
+			}	else	{
+				System.out.println("Unauthorised: " + e.toString());
 			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("General exception error: " + e.toString());
 		}
 		return accepted;
 	}
@@ -455,32 +457,40 @@ public class EmailWindow {
 	        public void run() {
 						try {
 							File xlFile = new File(fileLocation);
-							Workbook excelBook = new XSSFWorkbook(xlFile);
-							contacts.importAll(excelBook);
+							contacts.importWorkbook(xlFile);
 						} catch (IOException e1) {
-							e1.printStackTrace();
+							runError = true;
+							errorString = ("Workbook not found: " + e1.toString() + System.getProperty("line.separator"));
 						} catch (OutOfMemoryError e2)	{
-							outofMemory = true;
-							errorString = ("Java ran out of memory: " + e2 + System.getProperty("line.separator"));
+							runError = true;
+							errorString = ("Java ran out of memory: " + e2.toString() + System.getProperty("line.separator"));
 						} catch (InvalidFormatException e) {
-							errorString = ("The workbook is not in the correct format: " + e);
+							runError = true;
+							errorString = ("The workbook is not in the correct format: " + e.toString() + System.getProperty("line.separator"));
+						} catch (Exception e) {
+							runError = true;
+							errorString = ("Import error: " + e.toString() + System.getProperty("line.separator"));
 						}
 					}
 	        	});
+	    tempString = txtSystem.getText();
 		txtSystem.setText("Importing..." + System.getProperty("line.separator"));
 	    importThread.start();
 	    display(importRun);
 	}
 	static void startSend()	{
+		sent = false;
 		Thread sendThread = new Thread(new Runnable() {
 			public void run() {
 				try {
 					sendAll();
 					} catch (Exception e1) {
-						e1.printStackTrace();
+						errorString = ("Send error: " + e1.toString() + System.getProperty("line.separator"));
 						}
 				}
 			});
+		tempString = txtSystem.getText();
+		txtSystem.setText("Sending emails..." + System.getProperty("line.separator"));
 		sendThread.start();
 		display(sendRun);
 		}
@@ -501,10 +511,11 @@ public class EmailWindow {
 				refreshService.shutdown();
 				if (contacts.importSuccess) {
 					enableMain();
-					txtSystem.setText(contacts.getResults());
+					txtSystem.setText(tempString + contacts.getResults() + System.getProperty("line.separator"));
 					setFirst();
 				}	else	{
 					importFinished = false;
+					enableMain();
 					String errorString = "A required column was not found: " + System.getProperty("line.separator");
 					if (contacts.emailFound == false)	{
 						errorString += "No email column detected. Please ensure your data contains an 'Email' column." + System.getProperty("line.separator");
@@ -513,66 +524,76 @@ public class EmailWindow {
 						errorString += "No Student ID column detected. Please ensure your data contains an 'Student' column." + System.getProperty("line.separator");
 					}
 					if (contacts.nameFound == false)	{
-						errorString += "No Name column detected. Please ensure your data contains an 'Forename' column.";
+						errorString += "No Name column detected. Please ensure your data contains an 'Forename' column." + System.getProperty("line.separator");
 					}
-					txtSystem.setText(errorString);
+					txtSystem.setText(txtSystem.getText() + errorString + dLine);
 				}
 			}
-			if (outofMemory == true) {
+			if (runError == true) {
 				refreshService.shutdown();
-				txtSystem.setText(errorString);
-				outofMemory = false;
+				txtSystem.setText(txtSystem.getText() + errorString + dLine);
+				runError = false;
 			}
 		}
 	};
 	static Runnable sendRun = new Runnable()	{
 		@Override
 		public void run() {
-			setNext();
+			setCurrent();
+			txtSystem.setText("Sending to " + txtName.getText() + dLine + 
+					"Student ID: " + txtSID.getText() + dLine + 
+					"Email: " + txtEmail.getText());
 			if (sent == true)	{
 				enableMain();
 				refreshService.shutdown();
 				if (errorString.equals(""))	{
-					txtSystem.setText("All emails sent without error!");
+					txtSystem.setText(tempString + "All emails sent without error!" + dLine);
 				}	else	{
-					txtSystem.setText("Emails sent with errors: " + System.getProperty("line.separator") + errorString);
+					txtSystem.setText(tempString + "Emails sent with errors: " + dLine + errorString +
+							"All errors have been saved to 'Errors.txt'." + dLine +
+							"Please be aware that invalid email addresses will bounce back to the inbox, and will not be included in the above errors." + dLine);
 					try {
 						PrintWriter errorOutput = new PrintWriter("Errors.txt");
 						errorOutput.print(errorString);
 						errorOutput.close();
 					} catch (FileNotFoundException e) {
-						e.printStackTrace();
+						txtSystem.setText(txtSystem.getText() + "Error: " + e + dLine);
 					}
 				}
 			}
-			if (outofMemory == true) {
+			if (runError == true) {
 				refreshService.shutdown();
-				txtSystem.setText(errorString);
-				outofMemory = false;
+				txtSystem.setText(txtSystem.getText() + System.getProperty("line.separator") + errorString + dLine);
+				runError = false;
 			}
 		}
 	};
 	private static void setFirst()	{
-		Contact first = contacts.getFirst();
+		MergeContact first = contacts.getSpecific(1);
 		txtName.setText(first.getName());
 		txtSID.setText(first.getID());
 		txtEmail.setText(first.getEmail());
 	}
 	private static void setNext()	{
-		Contact next = contacts.getNext();
+		MergeContact next = contacts.getNext();
 		txtName.setText(next.getName());
 		txtSID.setText(next.getID());
 		txtEmail.setText(next.getEmail());
 	}
-	private static void setEmailParas()	{
-		userName = txtUser.getText();
-		inbox = comboDropDownIS.getText() + loginEmail.substring(loginEmail.indexOf('@'));
-		emailBody = txtMain.getText();
-		subject = txtSubject.getText();
+	private static void setCurrent()	{
+		MergeContact current = contacts.getSpecific(contacts.getCurrent());
+		txtName.setText(current.getName());
+		txtSID.setText(current.getID());
+		txtEmail.setText(current.getEmail());
 	}
-	
-	public static EmailMessage createEmail(int current) throws Exception	{
-		String signature = ""; // Set your institutions signature using HTML.
+	private static void setEmailParas()	{
+		userName = findName();
+		inbox = comboDropDownIS.getText().trim() + loginEmail.substring(loginEmail.indexOf('@')).trim();
+		emailBody = txtMain.getText().trim();
+		subject = txtSubject.getText().trim();
+	}
+	private static EmailMessage createEmail(int current) throws Exception	{
+		String signature = ""; //Set to signature for auto signature
 		EmailMessage msg = new EmailMessage(service);
 		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
 		"Dear " + contacts.getSpecific(current).getName() + ",<br/><br/>" + 
@@ -587,31 +608,25 @@ public class EmailWindow {
 		return msg;
 	}
 	
-	public static void sendAll() throws Exception	{
+	private static void sendAll() throws Exception	{
 		int total = contacts.getTotal();
 		errorString = "";
-		for (int i = 0; i < total; ++i)	{
+		for (int i = 1; i < total; ++i)	{
 			contacts.setCurrent(i);
 			EmailMessage message = createEmail(i);
 			if (contacts.getSpecific(i).getEmail().equals("noemail"))	{
-				errorString += ("Error: " + contacts.getSpecific(i).getName() + " not emailed. Email address missing!") + System.getProperty("line.separator");
+				errorString += ("Error: " + contacts.getSpecific(i).getName() + " not emailed. Email address missing!") + dLine;
 				} else if (contacts.getSpecific(i).getName().equals("Name not found!"))	{
-					errorString += ("Error: " + contacts.getSpecific(i).getEmail() + " not emailed. Name is missing!")  + System.getProperty("line.separator");
+					errorString += ("Error: " + contacts.getSpecific(i).getEmail() + " not emailed. Name is missing!")  + dLine;
 				} else if (contacts.getSpecific(i).getID().equals("studentIDMissing"))	{
-					errorString += ("Error: " + contacts.getSpecific(i).getEmail() + " not emailed. Student ID is missing!" + System.getProperty("line.separator"));
+					errorString += ("Error: " + contacts.getSpecific(i).getName() + " not emailed. Student ID is missing!" + dLine);
 				}	else	{
-					try	{
-						message.send();
-						}	catch (Exception e)	{
-							errorString += ("Exception (autoservice started): " + e);
-							service.autodiscoverUrl(loginEmail);
-							message.send();
-							}
+					message.send();
 					}
 			}
 		sent = true;
 		}
-	public static void preview()	{
+	private static void preview()	{
 		try {
 			EmailMessage preview = createEmail(contacts.getCurrent());
 			File output = new File(".\\preview.eml");
@@ -619,16 +634,60 @@ public class EmailWindow {
 			Properties props = new Properties();
 			session = Session.getDefaultInstance(props);
 			MimeMessage message = new MimeMessage(session);
-			message.setContent(preview.getBody().toString(), "text/html");
 			message.setSubject(preview.getSubject());
+			message.setRecipients(Message.RecipientType.TO,
+		            InternetAddress.parse(txtEmail.getText()));
+			if (attachmentAdded == true)	{
+				Multipart multiPart = new MimeMultipart();
+				BodyPart mainBody = new MimeBodyPart();
+				mainBody.setContent(preview.getBody().toString().replaceAll("’", "'"), "text/html");
+				multiPart.addBodyPart(mainBody);
+				mainBody = new MimeBodyPart();
+				DataSource source = new FileDataSource(attachmentLocation);
+				mainBody.setDataHandler(new DataHandler(source));
+				mainBody.setFileName(txtAttachment.getText());
+				multiPart.addBodyPart(mainBody);
+				message.setContent(multiPart);
+			}	else	{
+				message.setContent(preview.getBody().toString().replaceAll("’", "'"), "text/html");
+			}
 			FileOutputStream os = new FileOutputStream(output);
 			message.writeTo(os);
 			os.close();
             Runtime.getRuntime().exec(new String[]
             {"rundll32", "url.dll,FileProtocolHandler",
             	output.getAbsolutePath()});
+            enableMain();
 		} catch (Exception e) {
-			e.printStackTrace();
+			txtSystem.setText("Fatal Preview error: " + e.toString());
 		}
+	}
+	private static String findJob()	{
+		String returnString = "";
+		try {
+			NameResolutionCollection nameResolutions = service.resolveName(loginEmail.substring(0, loginEmail.indexOf('@')), ResolveNameSearchLocation.DirectoryOnly, true);
+			if (nameResolutions.getCount() == 1) {
+				returnString = nameResolutions.nameResolutionCollection(0).getContact().getJobTitle();
+			}	else	{
+				returnString = "Admissions Member";
+			}
+		} catch (Exception e) {
+			txtSystem.setText("Fatal Job error: " + e.toString());
+		}
+		return returnString;
+	}
+	private static String findName()	{
+		String returnString = "";
+		try {
+			NameResolutionCollection nameResolutions = service.resolveName(loginEmail.substring(0, loginEmail.indexOf('@')), ResolveNameSearchLocation.DirectoryOnly, true);
+			if (nameResolutions.getCount() == 1) {
+				returnString = nameResolutions.nameResolutionCollection(0).getContact().getDisplayName();
+			}	else	{
+				returnString = "Admissions Member";
+			}
+		} catch (Exception e) {
+			txtSystem.setText("Fatal Name error: " + e.toString());
+		}
+		return returnString;
 	}
 }
