@@ -10,10 +10,22 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ContactList {
 	private MergeContact currentContact;
-	private int current = 0, total = 0, nameColumn = 0, studentIDColumn = 0, emailColumn = 0;
+	private int current = 0, total = 0, nameColumn = 0, studentIDColumn = 0, emailColumn = 0, totalColumns = 0;
 	private Sheet mainSheet;
 	private String resultsString = "";
-	public boolean emailFound = false, idFound = false, nameFound = false, importSuccess = false;
+	private boolean emailFound = false, idFound = false, nameFound = false, importSuccess = false;
+	public boolean getImportSuccess()	{
+		return importSuccess;
+	}
+	public boolean getNameFound()	{
+		return nameFound;
+	}
+	public boolean getIdFound()	{
+		return idFound;
+	}
+	public boolean getEmailFound()	{
+		return emailFound;
+	}
 	public MergeContact getNext()	{
 		if (current < total - 1)	{
 			++current;
@@ -29,29 +41,35 @@ public class ContactList {
 	public MergeContact getSpecific(int toRetreive) {
 		String tempName = "", tempID = "", tempEmail = "";
 		try	{
-				tempName = mainSheet.getRow(toRetreive).getCell(nameColumn).getRichStringCellValue().toString();
-				if (tempName.trim().equals(""))	{
-					tempName = "Name not found!";
-				}
-			} catch (NullPointerException | IllegalStateException f) {
+			tempName = mainSheet.getRow(toRetreive).getCell(nameColumn).getRichStringCellValue().toString();
+			if (tempName.trim().equals(""))	{
 				tempName = "Name not found!";
-		}
-			try	{
-				tempID = String.valueOf(Math.round(mainSheet.getRow(toRetreive).getCell(studentIDColumn).getNumericCellValue()));
-				if (tempID.trim().equals(""))	{
-					tempID = "studentIDMissing";
 				}
-			} catch (NullPointerException | IllegalStateException n)	{
+			} catch (NullPointerException f) {
+				tempName = "Name not found!";
+				}	catch (IllegalStateException f1) {
+					tempName = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
+					}
+		try	{
+			tempID = String.valueOf(Math.round(mainSheet.getRow(toRetreive).getCell(studentIDColumn).getNumericCellValue()));
+			if (tempID.trim().equals(""))	{
 				tempID = "studentIDMissing";
-			}
-			try	{
-				tempEmail = mainSheet.getRow(toRetreive).getCell(emailColumn).getStringCellValue();
-				if (tempEmail.trim().equals(""))	{
-					tempEmail = "noemail";
 				}
-			} catch (NullPointerException | IllegalStateException e) {
+			} catch (NullPointerException n) {
+				tempID = "Name not found!";
+				}	catch (IllegalStateException n1) {
+					tempID = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
+					}
+		try	{
+			tempEmail = mainSheet.getRow(toRetreive).getCell(emailColumn).getStringCellValue();
+			if (tempEmail.trim().equals(""))	{
 				tempEmail = "noemail";
-		}
+				}
+			} catch (NullPointerException e) {
+				tempEmail = "Name not found!";
+				}	catch (IllegalStateException e) {
+					tempEmail = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
+					}
 		current = toRetreive;
 		currentContact = new MergeContact(tempName, tempID, tempEmail);
 		return currentContact;
@@ -69,9 +87,13 @@ public class ContactList {
 	public String getResults()	{
 		return resultsString;
 	}
+	public Sheet getMainSheet()	{
+		return mainSheet;
+	}
 	public void importWorkbook(File xlFile) throws Exception	{
 		mainSheet = null;
-		nameFound = idFound = emailFound = importSuccess = EmailWindow.importFinished = false;
+		nameFound = idFound = emailFound = importSuccess = false;
+		EmailWindow.setImportFinished(false);
 		Workbook excelBook = new XSSFWorkbook(xlFile);
 		mainSheet = excelBook.getSheetAt(0);
 		try	{
@@ -80,14 +102,16 @@ public class ContactList {
 			System.out.println("Could not close: " + c);
 		}
 		total = mainSheet.getPhysicalNumberOfRows();
-		int columns = mainSheet.getRow(0).getPhysicalNumberOfCells();
+		totalColumns = mainSheet.getRow(0).getPhysicalNumberOfCells();
+		String[] mergeList = new String[totalColumns];
 		resultsString = ("Import successful!" + System.getProperty("line.separator"));
 		resultsString += ("Total applicants: " + (total - 1) + System.getProperty("line.separator"));
-		resultsString += ("Total columns: " + columns + System.getProperty("line.separator"));
+		resultsString += ("Total columns: " + totalColumns + System.getProperty("line.separator"));
 		Row firstRow = mainSheet.getRow(0);
 		String currentHeader = "";
-		for (int currentColumn = 0; currentColumn < columns; ++currentColumn) {
+		for (int currentColumn = 0; currentColumn < totalColumns; ++currentColumn) {
 			currentHeader = firstRow.getCell(currentColumn).getStringCellValue().trim();
+			mergeList[currentColumn] = new String(currentHeader);
 			if (emailFound == false && StringUtils.containsIgnoreCase(currentHeader, "email") 
 					|| StringUtils.containsIgnoreCase(currentHeader, "e-mail"))	{
 				emailFound = true;
@@ -116,9 +140,10 @@ public class ContactList {
 				resultsString += ("Name is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
 			}
 		}
+		EmailWindow.setMergeList(mergeList);
 		if (nameFound && idFound && emailFound)	{
 			importSuccess = true;
 		}
-		EmailWindow.importFinished = true;
+		EmailWindow.setImportFinished(true);
 	}
 }

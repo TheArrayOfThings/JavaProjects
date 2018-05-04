@@ -13,12 +13,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Text;
 
 public class Incorrect {
-	Shell incorrectShell;
+	private Text txtOutput;
+	private Shell incorrectShell;
 	Incorrect(Shell incorrectShellPara)	{
 		incorrectShell = incorrectShellPara;
 	}
-
-	private Text txtOutput;
 
 	public void open() {
 		Display display = Display.getDefault();
@@ -32,9 +31,6 @@ public class Incorrect {
 		}
 	}
 
-	/**
-	 * Create contents of the window.
-	 */
 	protected void createContents() {
 		incorrectShell.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		incorrectShell.setImage(SWTResourceManager.getImage(Incorrect.class, "/resources/LogoBasic.png"));

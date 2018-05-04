@@ -13,7 +13,7 @@ import org.eclipse.swt.events.MouseEvent;
 
 public class Confirm {
 	private Text txtAreYouSure;
-	Shell confirmShell;
+	private Shell confirmShell;
 	Confirm(Shell confirmShellPara)	{
 		confirmShell = confirmShellPara;
 	}
@@ -51,14 +51,9 @@ public class Confirm {
 		btnYes.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				try {
-					EmailWindow.disableMain();
-					EmailWindow.startSend();
-					confirmShell.close();
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				EmailWindow.disableMain();
+				EmailWindow.startSend();
+				confirmShell.close();
 			}
 		});
 		GridData gd_btnYes = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);

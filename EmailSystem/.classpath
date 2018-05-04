@@ -16,6 +16,5 @@
 	<classpathentry kind="lib" path="commons-collections4-4.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.swt"/>
 	<classpathentry kind="lib" path="commons-io-2.6.jar"/>
-	<classpathentry kind="lib" path="joda-time-2.9.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
