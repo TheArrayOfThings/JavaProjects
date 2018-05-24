@@ -1,11 +1,13 @@
 package main;
 
+import org.apache.poi.openxml4j.exceptions.InvalidOperationException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileNotFoundException;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class ContactList {
@@ -41,32 +43,23 @@ public class ContactList {
 	public MergeContact getSpecific(int toRetreive) {
 		String tempName = "", tempID = "", tempEmail = "";
 		try	{
-			tempName = mainSheet.getRow(toRetreive).getCell(nameColumn).getRichStringCellValue().toString();
-			if (tempName.trim().equals(""))	{
-				tempName = "Name not found!";
-				}
+			tempName = mainSheet.getRow(toRetreive).getCell(nameColumn).getStringCellValue().toString();
 			} catch (NullPointerException f) {
-				tempName = "Name not found!";
+				tempName = "";
 				}	catch (IllegalStateException f1) {
 					tempName = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
 					}
 		try	{
 			tempID = String.valueOf(Math.round(mainSheet.getRow(toRetreive).getCell(studentIDColumn).getNumericCellValue()));
-			if (tempID.trim().equals(""))	{
-				tempID = "studentIDMissing";
-				}
 			} catch (NullPointerException n) {
-				tempID = "Name not found!";
+				tempID = "";
 				}	catch (IllegalStateException n1) {
-					tempID = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
+					tempID = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getStringCellValue());
 					}
 		try	{
 			tempEmail = mainSheet.getRow(toRetreive).getCell(emailColumn).getStringCellValue();
-			if (tempEmail.trim().equals(""))	{
-				tempEmail = "noemail";
-				}
 			} catch (NullPointerException e) {
-				tempEmail = "Name not found!";
+				tempEmail = "";
 				}	catch (IllegalStateException e) {
 					tempEmail = String.valueOf(mainSheet.getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
 					}
@@ -90,60 +83,98 @@ public class ContactList {
 	public Sheet getMainSheet()	{
 		return mainSheet;
 	}
-	public void importWorkbook(File xlFile) throws Exception	{
+	private Boolean isHidden(Row row){
+	    return row.getZeroHeight();
+	}
+	public void importWorkbook(File xlFile)	{
+		String importError = "";
 		mainSheet = null;
 		nameFound = idFound = emailFound = importSuccess = false;
 		EmailWindow.setImportFinished(false);
-		Workbook excelBook = new XSSFWorkbook(xlFile);
-		mainSheet = excelBook.getSheetAt(0);
 		try	{
-			excelBook.close();
-		}	catch (FileNotFoundException c) {
-			System.out.println("Could not close: " + c);
-		}
-		total = mainSheet.getPhysicalNumberOfRows();
-		totalColumns = mainSheet.getRow(0).getPhysicalNumberOfCells();
-		String[] mergeList = new String[totalColumns];
-		resultsString = ("Import successful!" + System.getProperty("line.separator"));
-		resultsString += ("Total applicants: " + (total - 1) + System.getProperty("line.separator"));
-		resultsString += ("Total columns: " + totalColumns + System.getProperty("line.separator"));
-		Row firstRow = mainSheet.getRow(0);
-		String currentHeader = "";
-		for (int currentColumn = 0; currentColumn < totalColumns; ++currentColumn) {
-			currentHeader = firstRow.getCell(currentColumn).getStringCellValue().trim();
-			mergeList[currentColumn] = new String(currentHeader);
-			if (emailFound == false && StringUtils.containsIgnoreCase(currentHeader, "email") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "e-mail"))	{
-				emailFound = true;
-				emailColumn = currentColumn;
-				resultsString += ("Email is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+			Workbook excelBook = new XSSFWorkbook(xlFile);
+			mainSheet = excelBook.getSheetAt(0);
+			try	{
+				excelBook.close();
+			}	catch (FileNotFoundException e)	{
+				//Do nothing.. 
 			}
-			if (idFound == false && (StringUtils.containsIgnoreCase(currentHeader, "studentid") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "student id") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "studentref") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "student ref") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "applicantid") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "applicant id")
-					|| StringUtils.containsIgnoreCase(currentHeader, "student_ref")))	{
-				idFound = true;
-				studentIDColumn = currentColumn;
-				resultsString += ("Student ID is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+			for (Row eachRow: mainSheet)	{
+				if (isHidden(eachRow))	{
+					importError = "Fatal import error:"
+							+ System.getProperty("line.separator") + "Filtered sheet detected! Please unfilter and re-import!"
+							+ System.getProperty("line.separator") + System.getProperty("line.separator");
+					throw new Exception();
+				}
 			}
-			if (nameFound == false && (StringUtils.containsIgnoreCase(currentHeader, "forename") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "firstname") 
-					|| StringUtils.containsIgnoreCase(currentHeader, "first name") 
-					|| StringUtils.equalsIgnoreCase(currentHeader, "name"))
-					|| StringUtils.equalsIgnoreCase(currentHeader, "fullname")
-					|| StringUtils.equalsIgnoreCase(currentHeader, "full name"))	{
-				nameFound = true;
-				nameColumn = currentColumn;
-				resultsString += ("Name is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+			total = mainSheet.getPhysicalNumberOfRows();
+			totalColumns = mainSheet.getRow(0).getPhysicalNumberOfCells();
+			String[] mergeList = new String[totalColumns];
+			resultsString = ("Import successful!" + System.getProperty("line.separator"));
+			resultsString += ("Total applicants: " + (total - 1) + System.getProperty("line.separator"));
+			resultsString += ("Total columns: " + totalColumns + System.getProperty("line.separator"));
+			Row firstRow = mainSheet.getRow(0);
+			String currentHeader = "";
+			for (int currentColumn = 0; currentColumn < totalColumns; ++currentColumn) {
+				currentHeader = firstRow.getCell(currentColumn).getStringCellValue().trim();
+				mergeList[currentColumn] = new String(currentHeader);
+				if (emailFound == false && StringUtils.containsIgnoreCase(currentHeader, "email") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "e-mail"))	{
+					emailFound = true;
+					emailColumn = currentColumn;
+					resultsString += ("Email is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+				}
+				if (idFound == false && (StringUtils.containsIgnoreCase(currentHeader, "studentid") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "student id") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "student-id") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "student_id") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "studentref") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "student ref") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "student-ref")
+						|| StringUtils.containsIgnoreCase(currentHeader, "student_ref")
+						|| StringUtils.containsIgnoreCase(currentHeader, "applicantid") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "applicant id")
+						|| StringUtils.containsIgnoreCase(currentHeader, "applicant-id")
+						|| StringUtils.containsIgnoreCase(currentHeader, "applicant_id")))	{
+					idFound = true;
+					studentIDColumn = currentColumn;
+					resultsString += ("Student ID is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+				}
+				if (nameFound == false && (StringUtils.containsIgnoreCase(currentHeader, "fore name") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "forename")
+						|| StringUtils.containsIgnoreCase(currentHeader, "fore-name") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "fore_name")
+						|| StringUtils.containsIgnoreCase(currentHeader, "first name")
+						|| StringUtils.containsIgnoreCase(currentHeader, "firstname") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "first-name") 
+						|| StringUtils.containsIgnoreCase(currentHeader, "first_name") 
+						|| StringUtils.equalsIgnoreCase(currentHeader, "name")))	{
+					nameFound = true;
+					nameColumn = currentColumn;
+					resultsString += ("Name is column: " + (currentColumn + 1) + System.getProperty("line.separator"));
+				}
+			}
+			EmailWindow.setMergeList(mergeList);
+			if (nameFound && idFound && emailFound)	{
+				importSuccess = true;
+			}
+			EmailWindow.setImportFinished(true);
+		}	catch (FileNotFoundException  e1) {
+			importError = ("Workbook not found: " + e1.toString());
+			EmailWindow.setError(importError);
+		}	catch (OutOfMemoryError e2)	{
+			importError = ("Java ran out of memory: " + e2.toString());
+			EmailWindow.setError(importError);
+		}	catch (InvalidOperationException e3)	{
+			importError = ("The workbook could not be found! " + e3.toString());
+			EmailWindow.setError(importError);
+		}	catch (Exception e5) {
+			if (!(importError.equals("")))	{
+				EmailWindow.setError(importError);
+			}	else	{
+				importError = ("Unexpected import error: " + e5.toString());
+				EmailWindow.setError(importError);
 			}
 		}
-		EmailWindow.setMergeList(mergeList);
-		if (nameFound && idFound && emailFound)	{
-			importSuccess = true;
-		}
-		EmailWindow.setImportFinished(true);
 	}
 }

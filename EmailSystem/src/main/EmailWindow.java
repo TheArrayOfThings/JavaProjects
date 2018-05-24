@@ -26,7 +26,6 @@ import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import microsoft.exchange.webservices.data.misc.NameResolutionCollection;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Label;
@@ -35,6 +34,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Combo;
 
 import javax.activation.DataHandler;
@@ -54,7 +54,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,26 +67,27 @@ import java.util.regex.Pattern;
 
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.custom.StyledText;
 
 public class EmailWindow {
-	private static Text txtMain, txtSubject, txtName, txtSID, txtEmail, txtAttachment;
+	private static Text txtMain, txtSubject, txtName, txtSID, txtEmail;
 	private static Button btnPreview, btnSend, btnPrevious, btnNext, btnImport, btnAddAttachment, btnRemoveAttachment;;
 	private static Label lblDear, lblStudentId, lblEmail, lblInbox, lblAttachment;
 	private static StyledText txtSystem;
 	private static ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-	private static String loginEmail = "";
-	private static String loginPassword = "";
-	private static Combo comboDropDownIS;
+	private static Combo comboDropDownIS, comboAttach;
 	private static ContactList contacts = new ContactList();
-	private static boolean sent = false, attachmentAdded = false, runError = false, credentialsAccepted = false;
-	private static boolean importFinished = false;
+	private static boolean sent = false, runError = false, credentialsAccepted = false, importFinished = false;
 	private static ScheduledExecutorService refreshService;
-	private static String inbox = "", userName = "", emailBody = "", subject = "", attachmentLocation = "", errorString = "", tempString = "";
+	private static String inbox = "", userName = "", emailBody = "", signature = "", subject = "", errorString = "", tempString = "", loginEmail = "", loginPassword ="";
 	private static String dLine = System.getProperty("line.separator") + System.getProperty("line.separator");
 	private static String[] mergeList = new String[]{"Empty"};
+	private static String[] attachList = new String[1];
+	private static int attachNum = 0;
+	private static Shell shell = new Shell();
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) {
 		Display display = Display.getDefault();
 		try {
 			File url = new File(".\\URL.txt");
@@ -94,17 +95,30 @@ public class EmailWindow {
 				Scanner urlScanner = new Scanner(url);
 				service.setUrl(new URI(urlScanner.nextLine()));
 				urlScanner.close();
-			}
-			} catch (URISyntaxException e2) {
-				e2.printStackTrace();
 				}
-			Shell shell = new Shell();
+			} catch (URISyntaxException e) {
+				writeErrors(e.toString());
+				} catch (FileNotFoundException e1) {
+					writeErrors(e1.toString());
+			}
 			shell.setImage(SWTResourceManager.getImage(EmailWindow.class, "/resources/LogoBasic.png"));
 			shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_LIST_BACKGROUND));
-			shell.setSize(770, 603);
+			shell.setSize(800, 554);
 			shell.setText("Ryan's MailMerger");
 			shell.setLayout(new GridLayout(12, false));
-			
+			shell.addListener(SWT.Close, new Listener()	{
+				public void handleEvent(Event event) {
+					importFinished = true;
+					sent = true;
+					if (!(refreshService == null))	{
+						refreshService.shutdownNow();
+						}
+					File preview = new File(".\\preview.eml");
+					if (preview.exists())	{
+						preview.delete();
+					}
+					}
+				});
 			lblDear = new Label(shell, SWT.NONE);
 			lblDear.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 			lblDear.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -160,10 +174,12 @@ public class EmailWindow {
 			lblInbox.setText("Inbox:");
 			
 			comboDropDownIS = new Combo(shell, SWT.READ_ONLY);
-			comboDropDownIS.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-			comboDropDownIS.add("ukadmissions");
-			comboDropDownIS.add("interviews");
-			comboDropDownIS.setText("ukadmissions");
+			GridData gd_comboDropDownIS = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+			gd_comboDropDownIS.widthHint = 98;
+			comboDropDownIS.setLayoutData(gd_comboDropDownIS);
+			comboDropDownIS.add(""); //add inbox name (before @ symbol)
+			comboDropDownIS.add("");
+			comboDropDownIS.setText("");
 			comboDropDownIS.setEnabled(false);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
@@ -187,15 +203,18 @@ public class EmailWindow {
 			
 			lblAttachment = new Label(shell, SWT.NONE);
 			lblAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			lblAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+			lblAttachment.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 			lblAttachment.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblAttachment.setText("Attachment:");
+			lblAttachment.setText("Attachments:");
 			
-			txtAttachment = new Text(shell, SWT.BORDER | SWT.READ_ONLY);
-			txtAttachment.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			txtAttachment.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			txtAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
-			txtAttachment.setEnabled(false);
+			comboAttach = new Combo(shell, SWT.READ_ONLY);
+			GridData gd_comboAttach = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+			gd_comboAttach.widthHint = 99;
+			comboAttach.setLayoutData(gd_comboAttach);
+			comboAttach.setEnabled(false);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
+			new Label(shell, SWT.NONE);
 			
 			lblEmail = new Label(shell, SWT.NONE);
 			lblEmail.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
@@ -214,22 +233,37 @@ public class EmailWindow {
 			new Label(shell, SWT.NONE);
 			
 			btnAddAttachment = new Button(shell, SWT.NONE);
-			GridData gd_btnAddAttachment = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
-			gd_btnAddAttachment.widthHint = 53;
+			GridData gd_btnAddAttachment = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+			gd_btnAddAttachment.widthHint = 58;
 			btnAddAttachment.setLayoutData(gd_btnAddAttachment);
 			btnAddAttachment.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
-					attachmentLocation = "";
-					attachmentAdded = false;
+					String attachmentLocation = "";
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
 					dialog.setFilterExtensions(new String [] {"*.*"});
 					dialog.setFilterPath("H:\\");
 					attachmentLocation = dialog.open();
 					if (attachmentLocation != null)	{
-						txtSystem.setText(txtSystem.getText() + "File: " + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + " added successfully!" + dLine);
-						txtAttachment.setText(attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1));
-						attachmentAdded = true;
+						File testFile = new File (attachmentLocation);
+						if (testFile.exists()) {
+							txtSystem.setText(txtSystem.getText() + "File: '" + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + "' added successfully!" + dLine);
+							comboAttach.add(attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1));
+							String[] tempAttach = new String[(attachNum) + 1];
+							int tempCount = 0;
+							for (int i = 0; i < attachNum; ++i)	{
+								if (attachList[i] != null)	{
+									tempAttach[tempCount] = attachList[i];
+									++tempCount;
+								}
+							}
+							attachList = tempAttach;
+							attachList[attachNum] = attachmentLocation;
+							comboAttach.select(attachNum);
+							++attachNum;
+						}	else	{
+							txtSystem.setText(txtSystem.getText() + "Attachment not found!" + dLine);
+						}
 					}
 				}
 			});
@@ -240,17 +274,29 @@ public class EmailWindow {
 			btnRemoveAttachment.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
-					if (attachmentAdded)	{
-						txtSystem.setText(txtSystem.getText() + "File: " + attachmentLocation.substring(attachmentLocation.lastIndexOf("\\") + 1) + " removed successfully!" + dLine);
+					if (attachNum > 0)	{
+						txtSystem.setText(txtSystem.getText() + "File: '" + comboAttach.getText() + "' removed successfully!" + dLine);
+						attachList[comboAttach.indexOf(comboAttach.getText())] = null;
+						comboAttach.remove(comboAttach.getText());
+						String[] tempAttach = new String[(attachNum) - 1];
+						int tempCount = 0;
+						for (int i = 0; i < attachNum; ++i)	{
+							if (attachList[i] != null)	{
+								tempAttach[tempCount] = attachList[i];
+								++tempCount;
+							}
+						}
+						attachList = tempAttach;
+						--attachNum;
+						comboAttach.select((attachNum) - 1);
 					}	else	{
 						txtSystem.setText(txtSystem.getText() + "No attachment to remove!" + dLine);
 					}
-					attachmentLocation = null;
-					attachmentAdded = false;
-					txtAttachment.setText("");
 				}
 			});
-			btnRemoveAttachment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+			GridData gd_btnRemoveAttachment = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+			gd_btnRemoveAttachment.widthHint = 58;
+			btnRemoveAttachment.setLayoutData(gd_btnRemoveAttachment);
 			btnRemoveAttachment.setText("Remove");
 			btnRemoveAttachment.setEnabled(false);
 			new Label(shell, SWT.NONE);
@@ -273,7 +319,7 @@ public class EmailWindow {
 			txtSystem.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 			txtSystem.setSelectionBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 			txtSystem.setSelectionForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-			txtSystem.setText("Welcome to Ryan's MailMerger!\r\n\r\n1. Import your data using the 'Import' button, and selecting an excel spreadsheet. \r\n\r\n2. Add a subject and complete the body. \r\n\r\n3. Preview before sending!\r\n\r\n**'Dear [name]' is automatically added to the email!**\r\n\r\n**Your signature is automatically added to the email!**\r\n\r\n");
+			txtSystem.setText("Welcome to Ryan's MailMerger!\r\n\r\n1. Import your data using the 'Import' button.\r\n\r\n2. Add a subject and complete the body. \r\n\r\n3. Preview before sending!\r\n\r\n**'Dear [name]' is automatically added!**\r\n\r\n**'Student ID: [Student ID]' is automatically added!**\r\n\r\n**Your signature is automatically added!**\r\n\r\n");
 			txtSystem.setDoubleClickEnabled(false);
 			txtSystem.setEditable(false);
 			txtSystem.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
@@ -305,19 +351,14 @@ public class EmailWindow {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-					dialog.setFilterExtensions(new String [] {"*.xlsx"});
+					dialog.setFilterExtensions(new String [] {"*.xls*"});
 					dialog.setFilterPath("H:\\");
 					String fileLocation = dialog.open();
 					if (fileLocation == null)	{
 						txtSystem.setText(txtSystem.getText() + "Please select a file to import!" + dLine);
 					}	else	{
 						disableMain();
-						try	{
-							startImport(fileLocation);	
-						} catch (OutOfMemoryError ofm)	{
-							runError = true;
-							errorString = ("Java ran out of memory: " + ofm + dLine);
-						}
+						startImport(fileLocation);	
 					}
 				}
 			});
@@ -347,9 +388,9 @@ public class EmailWindow {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					if (importFinished)	{
-						if (txtSubject.getText().trim().contains("[Replace with subject]")) {
+						if (txtSubject.getText().trim().contains("[Replace with subject]") || txtSubject.getText().trim().equals("")) {
 							txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please add a subject before sending to applicants!" + dLine);
-						}	else if (txtMain.getText().trim().contains("[Replace with body of email]"))	{
+						}	else if (txtMain.getText().trim().contains("[Replace with body of email]") || txtMain.getText().trim().equals(""))	{
 							txtSystem.setText(txtSystem.getText() + "Error: " + System.getProperty("line.separator") + "Please change the body of the email before sending to applicants!" + dLine);
 						}	else	{
 							try {
@@ -358,7 +399,7 @@ public class EmailWindow {
 								Confirm confirm = new Confirm(confirmShell);
 								confirm.open();
 							} catch (Exception e1) {
-								e1.printStackTrace();
+								writeErrors(e1.toString());
 							}
 						}
 					}	else	{
@@ -378,6 +419,8 @@ public class EmailWindow {
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			
+			addMainMenu(txtMain);
+			addSubjectMenu(txtSubject);
 			shell.open();
 			shell.layout();
 			if (credentialsAccepted == false) {
@@ -397,7 +440,7 @@ public class EmailWindow {
 		txtSID.setEnabled(true);
 		comboDropDownIS.setEnabled(true);
 		txtEmail.setEnabled(true);
-		txtAttachment.setEnabled(true);
+		comboAttach.setEnabled(true);
 		txtSubject.setEnabled(true);
 		txtSystem.setEnabled(true);
 		txtMain.setEnabled(true);
@@ -413,7 +456,7 @@ public class EmailWindow {
 		txtSID.setEnabled(false);
 		comboDropDownIS.setEnabled(false);
 		txtEmail.setEnabled(false);
-		txtAttachment.setEnabled(false);
+		comboAttach.setEnabled(false);
 		txtSubject.setEnabled(false);
 		txtSystem.setEnabled(false);
 		txtMain.setEnabled(false);
@@ -430,7 +473,6 @@ public class EmailWindow {
 			InternetAddress check = new InternetAddress(loginEmail);
 			check.validate();
 		} catch (AddressException e1) {
-			System.out.println("Invalid address error!");
 			return accepted;
 		}
 		service.setCredentials(credentials);
@@ -445,18 +487,17 @@ public class EmailWindow {
 				}
 		} catch (ServiceRequestException e) {
 			if (e.toString().indexOf("401") == -1)	{
-				System.out.println("Suspected URI error: " + e.toString());
-				try {
-					service.autodiscoverUrl(loginEmail);
-					return credCheck();
-				} catch (Exception e1) {
-					System.out.println("URI Autodiscover error: " + e1.toString());
-				}
+					try {
+						service.autodiscoverUrl(loginEmail);
+						return credCheck();
+					} catch (Exception e1) {
+						writeErrors(e1.toString());
+					}
 			}	else	{
-				System.out.println("Unauthorised: " + e.toString());
+				writeErrors(e.toString());
 			}
 		} catch (Exception e) {
-			System.out.println("General exception error: " + e.toString());
+			writeErrors(e.toString());
 		}
 		return accepted;
 	}
@@ -469,48 +510,30 @@ public class EmailWindow {
 	private static void startImport(String fileLocation)	{
 	    Thread importThread = new Thread(new Runnable() {
 	        public void run() {
-						try {
-							File xlFile = new File(fileLocation);
-							contacts.importWorkbook(xlFile);
-						} catch (IOException e1) {
-							runError = true;
-							errorString = ("Workbook not found: " + e1.toString() + System.getProperty("line.separator"));
-						} catch (OutOfMemoryError e2)	{
-							runError = true;
-							errorString = ("Java ran out of memory: " + e2.toString() + System.getProperty("line.separator"));
-						} catch (InvalidFormatException e) {
-							runError = true;
-							errorString = ("The workbook is not in the correct format: " + e.toString() + System.getProperty("line.separator"));
-						} catch (Exception e) {
-							runError = true;
-							errorString = ("Import error: " + e.toString() + System.getProperty("line.separator"));
-						}
+	        	runError = false;
+	        	errorString = "";
+	        	File xlFile = new File(fileLocation);
+	        	contacts.importWorkbook(xlFile);
 					}
 	        	});
 	    tempString = txtSystem.getText();
 		txtSystem.setText("Importing..." + System.getProperty("line.separator"));
 	    importThread.start();
-	    refreshDisplay(importRun);
+	    refreshDisplay(refreshImport); 
 	}
 	public static void startSend()	{
 		sent = false;
 		Thread sendThread = new Thread(new Runnable() {
 			public void run() {
-				try {
-					sendAll();
-					}	catch (ServiceResponseException e)	{
-						errorString = ("Fatal send error: You do not have access to the inbox you are trying to send from!" + dLine + e.toString());
-						sent = true;
-					}	catch (Exception e1) {
-						errorString = ("Fatal send error: " + e1.toString());
-						sent = true;
-						}
+				runError = false;
+				errorString = "";
+				sendAll();
 				}
 			});
 		tempString = txtSystem.getText();
 		txtSystem.setText("Sending emails..." + System.getProperty("line.separator"));
 		sendThread.start();
-		refreshDisplay(sendRun);
+		refreshDisplay(refreshSend);
 		}
 	private static void refreshDisplay(Runnable toRefresh)	{
 	    Runnable runRefresh = new Runnable() {
@@ -521,15 +544,15 @@ public class EmailWindow {
 	    refreshService = Executors.newSingleThreadScheduledExecutor();
 	    refreshService.scheduleAtFixedRate(runRefresh, 0, 33, TimeUnit.MILLISECONDS);
 	}
-	static Runnable importRun = new Runnable()	{
+	static Runnable refreshImport = new Runnable()	{
 		@Override
 		public void run() {
 			txtSystem.setText(txtSystem.getText() + " ...");
 			if (importFinished == true)	{
 				refreshService.shutdown();
 				if (contacts.getImportSuccess()) {
-					addPopMenu(txtMain);
-					addPopMenu(txtSubject);
+					addMainMenu(txtMain);
+					addSubjectMenu(txtSubject);
 					enableMain();
 					txtSystem.setText(tempString + contacts.getResults() + System.getProperty("line.separator"));
 					MergeContact first = contacts.getSpecific(1);
@@ -539,27 +562,30 @@ public class EmailWindow {
 				}	else	{
 					importFinished = false;
 					enableMain();
-					String errorString = "A required column was not found: " + System.getProperty("line.separator");
+					errorString = "A required column was not found: " + System.getProperty("line.separator");
 					if (contacts.getEmailFound() == false)	{
-						errorString += "No email column detected. Please ensure your data contains an 'Email' column." + System.getProperty("line.separator");
+						runError = true;
+						errorString += "No email column detected. Please ensure your data contains an 'Email' column." + dLine;
 					}
 					if (contacts.getIdFound() == false)	{
-						errorString += "No Student ID column detected. Please ensure your data contains an 'Student' column." + System.getProperty("line.separator");
+						runError = true;
+						errorString += "No Student ID column detected. Please ensure your data contains an 'Student' column." + dLine;
 					}
 					if (contacts.getNameFound() == false)	{
-						errorString += "No Name column detected. Please ensure your data contains an 'Forename' column." + System.getProperty("line.separator");
+						runError = true;
+						errorString += "No Name column detected. Please ensure your data contains an 'Forename' column." + dLine;
 					}
-					txtSystem.setText(txtSystem.getText() + errorString + dLine);
 				}
 			}
 			if (runError == true) {
 				refreshService.shutdown();
-				txtSystem.setText(txtSystem.getText() + errorString + dLine);
+				txtSystem.setText(tempString + errorString);
 				runError = false;
+				enableMain();
 			}
 		}
 	};
-	static Runnable sendRun = new Runnable()	{
+	static Runnable refreshSend = new Runnable()	{
 		@Override
 		public void run() {
 			MergeContact current = contacts.getSpecific(contacts.getCurrent());
@@ -575,27 +601,26 @@ public class EmailWindow {
 				if (errorString.equals(""))	{
 					txtSystem.setText(tempString + "All emails sent without error!" + dLine);
 				}	else	{
-					txtSystem.setText(tempString + "Emails sent with errors: " + dLine + errorString + dLine +
+					txtSystem.setText(tempString + "Emails sent with errors: " + dLine + errorString +
 							"All errors have been saved to 'Errors.txt'." + dLine +
 							"Please be aware that invalid email addresses will bounce back to the inbox, and will not be included in the above errors." + dLine);
-					try {
-						PrintWriter errorOutput = new PrintWriter("Errors.txt");
-						errorOutput.print(errorString);
-						errorOutput.close();
-					} catch (FileNotFoundException e) {
-						txtSystem.setText(txtSystem.getText() + "Error: " + e + dLine);
-					}
+					writeErrors(errorString);
 				}
 			}
 			if (runError == true) {
 				refreshService.shutdown();
-				txtSystem.setText(txtSystem.getText() + System.getProperty("line.separator") + errorString + dLine);
+				txtSystem.setText(tempString + errorString + dLine);
 				runError = false;
+				enableMain();
 			}
 		}
 	};
 	public static void setMergeList(String[] listToSet) {
 		mergeList = listToSet;
+	}
+	public static void setError(String errorPara)	{
+		runError = true;
+		errorString = errorPara;
 	}
 	public static void setImportFinished(boolean importToSet)	{
 		importFinished = importToSet;
@@ -605,17 +630,19 @@ public class EmailWindow {
 		inbox = comboDropDownIS.getText().trim() + loginEmail.substring(loginEmail.indexOf('@')).trim();
 		emailBody = txtMain.getText().trim();
 		subject = txtSubject.getText().trim();
+		signature = "";
+		if (!(StringUtils.endsWithIgnoreCase(emailBody, "regards") 
+				|| StringUtils.endsWithIgnoreCase(emailBody, "regards,")
+				|| StringUtils.endsWithIgnoreCase(emailBody, "wishes")
+				|| StringUtils.endsWithIgnoreCase(emailBody, "wishes,")
+				|| StringUtils.endsWithIgnoreCase(emailBody, "thanks")
+				|| StringUtils.endsWithIgnoreCase(emailBody, "thanks,")))	{
+			signature = "<br/><br/>Kind regards";
+		}
+		signature += ""; //Add html signature here
 	}
 	private static EmailMessage createEmail(int current) throws Exception	{
 		String thisBody = emailBody, thisSubject = subject;
-		String signature = "";
-		if (!(StringUtils.endsWithIgnoreCase(emailBody, "regards") 
-				|| StringUtils.endsWithIgnoreCase(emailBody, "wishes")
-				|| StringUtils.endsWithIgnoreCase(emailBody, "thanks")))	{
-			signature = "<br/><br/>Kind regards";
-		}
-		signature += "<br/><br/>" + userName + "<br/>" + findJob();
-		EmailMessage msg = new EmailMessage(service);
 		for (int i = 0; i < mergeList.length; ++i) {
 			try	{
 				thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), contacts.getMainSheet().getRow(current).getCell(i).getStringCellValue());
@@ -630,48 +657,70 @@ public class EmailWindow {
 				throw new Exception();
 			}
 		}
+		EmailMessage msg = new EmailMessage(service);
+		MergeContact currentContact = contacts.getSpecific(current);
 		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
-		"Dear " + contacts.getSpecific(current).getName() + ",<br/><br/>" + 
+				"Dear " + currentContact.getName() + ",<br/><br/>" + 
 				thisBody.replaceAll(System.getProperty("line.separator"), "<br/>") + signature));
-		if (attachmentAdded == true)	{
-			msg.getAttachments().addFileAttachment(attachmentLocation);
+		for (String eachString: attachList)	{
+			if (eachString != null)	{
+				msg.getAttachments().addFileAttachment(eachString);
+			}
 		}
 		if (thisSubject.endsWith("."))	{
-			msg.setSubject(thisSubject + " Student ID: " + contacts.getSpecific(current).getID());
+			msg.setSubject(thisSubject + " Student ID: " + currentContact.getID());
 		}	else	{
-			msg.setSubject(thisSubject + ". Student ID: " + contacts.getSpecific(current).getID());
+			msg.setSubject(thisSubject + ". Student ID: " + currentContact.getID());
 		}
-		msg.getToRecipients().add(contacts.getSpecific(current).getEmail());
+		msg.getToRecipients().add(currentContact.getEmail());
 		msg.setFrom(new EmailAddress(inbox));
 		return msg;
 	}
-	
-	private static void sendAll() throws Exception	{
-		int total = contacts.getTotal();
-		errorString = "";
-		for (int i = 1; i < total; ++i)	{
-			contacts.setCurrent(i);
-			EmailMessage message = createEmail(i);
-			if (contacts.getSpecific(i).getEmail().equals("noemail"))	{
-				errorString += ("Error: " + contacts.getSpecific(i).getName() + " not emailed. Email address missing!") + dLine;
-				} else if (contacts.getSpecific(i).getName().equals("Name not found!"))	{
-					errorString += ("Error: " + contacts.getSpecific(i).getEmail() + " not emailed. Name is missing!")  + dLine;
-				} else if (contacts.getSpecific(i).getID().equals("studentIDMissing"))	{
-					errorString += ("Error: " + contacts.getSpecific(i).getName() + " not emailed. Student ID is missing!" + dLine);
-				}	else	{
+	private static void writeErrors(String error)	{
+		try {
+			PrintWriter errorOutput = new PrintWriter(new FileWriter("Errors.txt", true));
+			errorOutput.print(error);
+			errorOutput.close();
+		}	catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	private static void sendAll()	{
+		try	{
+			int total = contacts.getTotal();
+			errorString = "";
+			for (int i = 1; i < total; ++i)	{
+				contacts.setCurrent(i);
+				MergeContact currentContact = contacts.getSpecific(i);
+				EmailMessage message = createEmail(i);
+				if (!(currentContact.getEmail().equals("") && currentContact.getName().equals("") && currentContact.getID().equals(""))) {
 					Mailbox sentBox = new Mailbox();
 					sentBox.setAddress(inbox);
-					FolderId sentBoxFolder = new FolderId(WellKnownFolderName.SentItems, sentBox);
-					if (attachmentAdded)	{
-						message.getBccRecipients().add(inbox);
-						message.send();
-					}	else	{
-						message.sendAndSaveCopy(sentBoxFolder);
+					FolderId sentBoxSentItems = new FolderId(WellKnownFolderName.SentItems, sentBox);
+					FolderId sentBoxDrafts = new FolderId(WellKnownFolderName.Drafts, sentBox);
+					message.save(sentBoxDrafts);
+					message.sendAndSaveCopy(sentBoxSentItems);
+				}	else if(currentContact.getEmail().equals(""))	{
+					errorString += ("Error: " + currentContact.getName() + ": " + currentContact.getID() + "  not emailed. Email address missing!") + dLine;
+					} else if (currentContact.getName().equals(""))	{
+						errorString += ("Error: " + currentContact.getEmail() + ": " + currentContact.getID() + " not emailed. Name is missing!")  + dLine;
+					} else if (currentContact.getID().equals(""))	{
+						errorString += ("Error: " + currentContact.getName() + ": " + currentContact.getEmail() + " not emailed. Student ID is missing!" + dLine);
 					}
 				}
+			sent = true;
+			}	catch(ServiceResponseException | ServiceRequestException | FileNotFoundException e)	{
+				runError = true;
+				if (StringUtils.containsIgnoreCase(e.toString(), "The system cannot find the file specified"))	{
+					errorString = ("Fatal send error: program cannot find attachment!");
+				}	else	{
+					errorString = ("Fatal send error: You do not have access to the inbox you are trying to send from!");
+				}
+			}	catch (Exception e1)	{
+				runError = true;
+				errorString = ("Fatal send error: " + e1.toString());
 			}
-		sent = true;
-		}
+	}
 	private static void preview()	{
 		try {
 			EmailMessage preview = createEmail(contacts.getCurrent());
@@ -681,22 +730,24 @@ public class EmailWindow {
 			Properties props = new Properties();
 			Session session = Session.getDefaultInstance(props);
 			MimeMessage message = new MimeMessage(session);
-			message.setSubject(preview.getSubject());
+			message.setSubject(preview.getSubject(), "text/html; charset=UTF-8");
 			message.setRecipients(Message.RecipientType.TO,
 		            InternetAddress.parse(txtEmail.getText()));
-			if (attachmentAdded == true)	{
-				Multipart multiPart = new MimeMultipart();
+			if (attachNum > 0)	{
 				BodyPart mainBody = new MimeBodyPart();
-				mainBody.setContent(preview.getBody().toString().replaceAll("’", "'"), "text/html");
+				mainBody.setContent(preview.getBody().toString(), "text/html; charset=UTF-8");
+				Multipart multiPart = new MimeMultipart();
 				multiPart.addBodyPart(mainBody);
-				mainBody = new MimeBodyPart();
-				DataSource source = new FileDataSource(attachmentLocation);
-				mainBody.setDataHandler(new DataHandler(source));
-				mainBody.setFileName(txtAttachment.getText());
-				multiPart.addBodyPart(mainBody);
+				for (String eachString: attachList)	{
+					mainBody = new MimeBodyPart();
+					DataSource source = new FileDataSource(eachString);
+					mainBody.setDataHandler(new DataHandler(source));
+					mainBody.setFileName(eachString.substring(eachString.lastIndexOf("\\") + 1));
+					multiPart.addBodyPart(mainBody);
+					}
 				message.setContent(multiPart);
-			}	else	{
-				message.setContent(preview.getBody().toString().replaceAll("’", "'"), "text/html");
+				}	else	{
+				message.setContent(preview.getBody().toString(), "text/html; charset=UTF-8");
 			}
 			message.writeTo(bos);
 			os.close();
@@ -705,48 +756,204 @@ public class EmailWindow {
             {"rundll32", "url.dll,FileProtocolHandler",
             	output.getAbsolutePath()});
             enableMain();
-		} catch (Exception e) {
+		} catch (ServiceRequestException | FileNotFoundException s)	{
 			enableMain();
-			txtSystem.setText("Fatal Preview error: " + e.toString());
-			e.printStackTrace();
+			txtSystem.setText(txtSystem.getText() + "Unable to preview: Attachment '" + comboAttach.getText() + "' not found." + dLine);
+		}	catch (Exception e) {
+			enableMain();
+			txtSystem.setText(txtSystem.getText() + "Fatal Preview error: " + e.toString());
 		}
 	}
 	private static String findJob()	{
-		String returnString = "";
 		try {
 			NameResolutionCollection nameResolutions = service.resolveName(loginEmail.substring(0, loginEmail.indexOf('@')), ResolveNameSearchLocation.DirectoryOnly, true);
 			if (nameResolutions.getCount() == 1) {
-				returnString = nameResolutions.nameResolutionCollection(0).getContact().getJobTitle();
+				return nameResolutions.nameResolutionCollection(0).getContact().getJobTitle();
 			}	else	{
-				returnString = "Admissions Member";
+				return "BU Staff";
 			}
 		} catch (Exception e) {
-			return "Admissions Member";
+			return "BU Staff";
 		}
-		return returnString;
 	}
 	private static String findName()	{
-		String returnString = "";
 		try {
 			NameResolutionCollection nameResolutions = service.resolveName(loginEmail.substring(0, loginEmail.indexOf('@')), ResolveNameSearchLocation.DirectoryOnly, true);
 			if (nameResolutions.getCount() == 1) {
-				returnString = nameResolutions.nameResolutionCollection(0).getContact().getDisplayName();
+				return nameResolutions.nameResolutionCollection(0).getContact().getDisplayName();
 			}	else	{
-				returnString = "Admissions Member";
+				return loginEmail.substring(0, loginEmail.indexOf('@'));
 			}
 		} catch (Exception e) {
-			txtSystem.setText("Fatal Name error: " + e.toString());
+			return loginEmail.substring(0, loginEmail.indexOf('@'));
 		}
-		return returnString;
 	}
 	private static void insertMerge(String mergeToAdd, Text text)	{
 		int caretPosition = text.getCaretPosition();
-		String formatted = "<<" + mergeToAdd + ">>";
-		text.setText(text.getText(0, (caretPosition - 1)) + formatted + text.getText(caretPosition, text.getText().length()));
-		text.setSelection(caretPosition + formatted.length());
+		int selectedChars = text.getSelectionCount();
+		if (selectedChars > 0)	{
+			String formatted = "<<" + mergeToAdd + ">>";
+			text.setText(text.getText(0, (caretPosition - 1)) + formatted + text.getText(caretPosition + selectedChars, text.getText().length()));
+			text.setSelection(caretPosition + formatted.length());
+		}	else	{
+			String formatted = "<<" + mergeToAdd + ">>";
+			text.setText(text.getText(0, (caretPosition - 1)) + formatted + text.getText(caretPosition, text.getText().length()));
+			text.setSelection(caretPosition + formatted.length());
+		}
 	}
-	private static void addPopMenu(Text textToAdd)	{
-	    Menu popupMenu = new Menu(textToAdd);
+	private static void insertTag(String tagToAdd, Text text)	{
+		String toInsert = "", toEnd = "";
+		int caretPosition = text.getCaretPosition();
+		int selectedChars = text.getSelectionCount();
+		switch (tagToAdd)	{
+		case "Bold": toInsert = "<b>"; toEnd = "</b>";
+		break;
+		case "Italics": toInsert = "<i>"; toEnd = "</i>";
+		break;
+		case "Strikethrough": toInsert = "<s>"; toEnd = "</s>";
+		break;
+		case "Red": toInsert = "<span style='color:red'>"; toEnd = "</span>";
+		break;
+		case "Blue": toInsert = "<span style='color:blue'>"; toEnd = "</span>";
+		break;
+		case "Green": toInsert = "<span style='color:green'>"; toEnd = "</span>";
+		break;
+		case "Custom Colour":
+			ColorDialog colourDialog = new ColorDialog(shell, SWT.OPEN);
+			RGB customColourRGB = colourDialog.open();
+			if (customColourRGB == null || customColourRGB.toString().equals(""))	{
+				return;
+			}
+			String customColour = String.format("#%02x%02x%02x", customColourRGB.red, customColourRGB.green, customColourRGB.blue);  
+			toInsert = "<span style='color:" + customColour + "'>"; toEnd = "</span>";
+		break;
+		}
+		if (selectedChars > 0)	{
+			text.setText(text.getText(0, (caretPosition - 1)) + toInsert + text.getText(caretPosition, (caretPosition + selectedChars) - 1) + toEnd + text.getText(caretPosition + selectedChars, text.getText().length()));
+			text.setSelection(caretPosition + toInsert.length() + toEnd.length() + selectedChars);
+		}
+	}
+	private static void insertHyperlink(Text text)	{
+		String toInsert = "", toEnd = "";
+		int caretPosition = text.getCaretPosition();
+		int selectedChars = text.getSelectionCount();
+		String linkToAdd = new HyperlinkDialog(shell, SWT.CLOSE).open();
+		toInsert = "<a href='" + linkToAdd + "'>"; toEnd = "</a>";
+		if (selectedChars > 0 && linkToAdd != null && (!(linkToAdd.equals(""))))	{
+			text.setText(text.getText(0, (caretPosition - 1)) + toInsert + text.getText(caretPosition, (caretPosition + selectedChars) - 1) + toEnd + text.getText(caretPosition + selectedChars, text.getText().length()));
+			text.setSelection(caretPosition + toInsert.length() + toEnd.length() + selectedChars);
+		}
+	}
+	private static void addMainMenu(Text textToAdd)	{
+	    Menu popupMenu = new Menu(textToAdd);	    
+	    MenuItem item = new MenuItem (popupMenu, SWT.PUSH);
+	    item.setText("Cut");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.cut();
+			}
+    	});
+	    item = new MenuItem (popupMenu, SWT.PUSH);
+	    item.setText("Copy");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.copy();
+			}
+    	});
+	    item = new MenuItem(popupMenu, SWT.PUSH);
+	    item.setText("Paste");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.paste();
+			}
+    	});
+	    item = new MenuItem(popupMenu, SWT.PUSH);
+	    item.setText("Select All");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.selectAll();
+			}
+    	});
+	    MenuItem addField = new MenuItem(popupMenu, SWT.CASCADE);
+	    addField.setText("Insert Merge Field");
+	    MenuItem addTag = new MenuItem(popupMenu, SWT.CASCADE);
+	    addTag.setText("Add Style to Selection");
+	    Menu tagMenu = new Menu(popupMenu);
+	    String[] supportedTags = new String[]	{
+	    		"Bold", "Italics", "Strikethrough", "Red", "Blue", "Green", "Custom Colour"
+	    };
+	    for (String eachString: supportedTags)	{
+	    	MenuItem tag = new MenuItem(tagMenu, SWT.CASCADE);
+	    	tag.setText(eachString);
+	    	tag.addListener(SWT.Selection, new Listener()	{
+				@Override
+				public void handleEvent(Event event) {
+					insertTag(eachString, textToAdd);
+				}
+	    	});
+	    }
+	    MenuItem hyperlink = new MenuItem(popupMenu, SWT.CASCADE);
+	    hyperlink.setText("Hyperlink Selection");
+	    hyperlink.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				insertHyperlink(textToAdd);
+			}
+    	});
+	    Menu newMenu = new Menu(popupMenu);
+	    for (String eachString: mergeList)	{
+	    	MenuItem field = new MenuItem(newMenu, SWT.CASCADE);
+	    	field.setText(eachString);
+	    	field.addListener(SWT.Selection, new Listener()	{
+				@Override
+				public void handleEvent(Event event) {
+					insertMerge(eachString, textToAdd);
+				}
+	    		
+	    	});
+	    }
+	    addTag.setMenu(tagMenu);
+	    addField.setMenu(newMenu);
+	    textToAdd.setMenu(popupMenu);
+	}
+	private static void addSubjectMenu(Text textToAdd)	{
+	    Menu popupMenu = new Menu(textToAdd);	    
+	    MenuItem item = new MenuItem (popupMenu, SWT.PUSH);
+	    item.setText("Cut");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.cut();
+			}
+    	});
+	    item = new MenuItem (popupMenu, SWT.PUSH);
+	    item.setText("Copy");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.copy();
+			}
+    	});
+	    item = new MenuItem(popupMenu, SWT.PUSH);
+	    item.setText("Paste");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.paste();
+			}
+    	});
+	    item = new MenuItem(popupMenu, SWT.PUSH);
+	    item.setText("Select All");
+	    item.addListener(SWT.Selection, new Listener()	{
+			@Override
+			public void handleEvent(Event event) {
+				textToAdd.selectAll();
+			}
+    	});
 	    MenuItem addField = new MenuItem(popupMenu, SWT.CASCADE);
 	    addField.setText("Insert Merge Field");
 	    Menu newMenu = new Menu(popupMenu);

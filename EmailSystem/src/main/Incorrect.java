@@ -41,9 +41,12 @@ public class Incorrect {
 		txtOutput = new Text(incorrectShell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		txtOutput.setText("Login credentials incorrect! \r\n\r\nPlease login to this program using your staff login details for outlook.\r\n");
+		txtOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		GridData gd_txtOutput = new GridData(SWT.FILL, SWT.FILL, true, false, 7, 3);
 		gd_txtOutput.heightHint = 85;
+		txtOutput.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 		txtOutput.setLayoutData(gd_txtOutput);
+		txtOutput.setEnabled(false);
 		
 		Button btnOk = new Button(incorrectShell, SWT.NONE);
 		GridData gd_btnOk = new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1);
