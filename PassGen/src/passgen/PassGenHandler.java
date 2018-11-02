@@ -1,212 +1,151 @@
 package passgen;
 import java.io.*;
-import org.eclipse.swt.widgets.Text;
 import java.util.Scanner;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.Date;
 
 public class PassGenHandler {
-	private String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ \"";
-	Random random = new Random();
-	private String decryptWord = "RyanRules";
-	private String firstLine = "";
-	private int encrypt1 = 0, encrypt2 = 0, encrypt3 = 0, encrypt4 = 0, totalPasses = 0, disabled = 0;
-	private boolean login = false;
-	private int tries = 10;
-	private Text outputText, keyPWText, passNameText;
-	private int selected = -1;
-	private PassWord[] passBook = new PassWord[2];
-	private File savedPass = new File("SavedPasses.txt");
-	private Scanner passScanner;
-	public void initialise(Text passNamePara, Text keyPWTextPara, Text outputTextPara)	{
-		keyPWText = keyPWTextPara;
-		outputText = outputTextPara;
-		passNameText = passNamePara;
-		if (!(savedPass.exists()))	{
-			outputText.setText("Please enter a 4-digit encryption key and press 'Submit' \r\n"
-					+ "You will have to remember this code! \r\n"
-					+ "Your PIN cannot contain a zero(0).");
-		}	else	{
-			try {	
+	private static String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!$%^&*()_-+[{]};:'@#~,<.>/?|=\\£ \"";
+	private static Random random = new Random();
+	private static String decryptWord = "RyanRules";
+	private static String firstLine = "";
+	private static int encrypt1 = 0;
+	private static int encrypt2 = 0;
+	private static int encrypt3 = 0;
+	private static int encrypt4 = 0;
+	private static int totalPasses = 0;
+	private static int selected = -1;
+	private static PassWord[] passBook = new PassWord[2];
+	private static File savedPass = new File("SavedPasses.txt");
+	private static PrintWriter errorWriter;
+	private static Scanner passScanner;
+	private static Date errorDate;
+	public static boolean initialise()	{
+		try {
+			if (savedPass.exists()) {
 				passScanner = new Scanner(savedPass);
 				firstLine = passScanner.nextLine();
-			} catch (FileNotFoundException unknown1) {
-				outputText.setText("Unknown error: " + unknown1);
-			}
-			outputText.setText("Please enter your PIN and press 'Submit'");
-		}
-	}
-	public int getTotal()	{
-		return totalPasses;
-	}
-	private void importAll()	{
-			while(passScanner.hasNext())	{
-				if (passBook.length >= totalPasses) {
-					this.doubleArray();
+				return true;
+				}	else	{
+					return false;
 				}
-				passBook[totalPasses] = new PassWord(this.decrypt(passScanner.nextLine()), this.decrypt(passScanner.nextLine()));
+			} catch (FileNotFoundException e) {//Should never happen!
+				addError("Something impossible happened...");
+				return false;
+				}
+	}
+	public static void setSelected(int toSet)	{
+		selected = toSet;
+	}
+	public static void importAll()	{
+			while(passScanner.hasNext())	{
+				if (passBook.length <= totalPasses) {
+					doubleArray();
+				}
+				passBook[totalPasses] = new PassWord(decrypt(passScanner.nextLine()), decrypt(passScanner.nextLine()));
 				totalPasses++;
 			}
-			passScanner.close();
 	}
-	public void exportAll()	{
+	public static String exportAll()	{
 		PrintWriter passOutput;
 		try {
 			savedPass.setWritable(true);
 			passOutput = new PrintWriter("SavedPasses.txt");
-			passOutput.println(this.encrypt(decryptWord));
+			passOutput.println(encrypt(decryptWord));
 			for (int i = 0; i < totalPasses; i++) {
-				passOutput.println(this.encrypt(passBook[i].getName()));
-				passOutput.println(this.encrypt(passBook[i].getPass()));
+				passOutput.println(encrypt(passBook[i].getName()));
+				passOutput.println(encrypt(passBook[i].getPass()));
 				}
-			this.printAll();
 			passOutput.close();
 			savedPass.setWritable(false);
 		} catch (FileNotFoundException unknown2) {
-			outputText.setText("Unknown error: " + unknown2);
+			addError("Unknown error: " + unknown2);
+		}
+		return printAll();
+	}
+	public static void deleteAll()	{
+		passScanner.close();
+		if(!(savedPass.delete()))	{
+			savedPass.deleteOnExit();
 		}
 	}
-	private void printAll()	{
+	public static String printAll()	{
 		String printAll = "Passwords: \n\r \n\r";
 		for (int i = 0; i < totalPasses; i++) {
 			printAll += passBook[i].getName() + "\n\r";
 			}
-		outputText.setText(printAll);
+		return printAll;
 	}
-	private void setKey()	{
-		encrypt1 = Integer.parseInt(keyPWText.getText().substring(0,1));
-		encrypt2 = Integer.parseInt(keyPWText.getText().substring(1,2));
-		encrypt3 = Integer.parseInt(keyPWText.getText().substring(2,3));
-		encrypt4 = Integer.parseInt(keyPWText.getText().substring(3,4));
+	public static void setKey(String toSet)	{
+		encrypt1 = Integer.parseInt(toSet.substring(0,1));
+		encrypt2 = Integer.parseInt(toSet.substring(1,2));
+		encrypt3 = Integer.parseInt(toSet.substring(2,3));
+		encrypt4 = Integer.parseInt(toSet.substring(3,4));
 	}
-	public Boolean submit()	{
-		if (login == true) {
-			this.addNew();
-			return true;
-		}	if ((!(savedPass.exists())) && this.valid() && disabled != 1)	{
-			this.setKey();
-			outputText.setText("Pin set to " + keyPWText.getText());
-			this.exportAll();
-			this.retreive(0);
-			login = true;
-			return true;
-			}	else	{
-			if (this.valid())	{ //Makes sure the pin is valid before checking it
-				this.setKey(); //Sets the key to the currently entered pin value
-				if (this.decrypt(firstLine).equals(decryptWord)) { //Pin accepted
-					outputText.setText("PIN accepted!");
-					this.importAll(); //Imports password book. Will only do this if PIN is accepted. 
-					this.retreive(0);
-					login = true;
+	public static Boolean check(String toCheck)	{
+			if (valid(toCheck))	{ //Makes sure the pin is valid before checking it
+				setKey(toCheck); //Sets the key to the currently entered pin value
+				if (decrypt(firstLine).equals(decryptWord)) { //Pin accepted
+					importAll(); //Imports password book. Will only do this if PIN is accepted. 
+					retreive(0);
 					return true;
-				}	else if (disabled == 0)	{
-					--tries;
-					if (tries < 1) {
-						passScanner.close();
-						savedPass.delete();
-						savedPass.deleteOnExit();
-						outputText.setText("Tries exceeded: password records deleted. \r\n"
-								+ "This program will terminate in 10 seconds.");
-						disabled = 1;
-						new Thread( new Runnable() {
-							public void run()  {
-								try {
-									TimeUnit.SECONDS.sleep(10);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-										}
-								System.exit(1);
-								}
-							} ).start();
-						return false;
-						}	else	{
-						outputText.setText("PIN incorrect, please try again. \r\n"
-								+ "You have " + tries + " tries remaining. \r\n"
-										+ "Your saved passwords will be deleted if this number is exceeded.");
-						return false;
-					}
 				}
-			}	else	{
-				return false;
 			}
-		}
 		return false;
 	}
-	private void setCurrent(int toSet)	{
+	private static void setCurrent(int toSet)	{
 		if (toSet >= totalPasses)	{
 			toSet = totalPasses - 1;
-		}	else if (toSet < 0)	{
+		}	else if (toSet <= 0)	{
 			toSet = 0;
 		}
-		passNameText.setText(passBook[toSet].getName());
-		keyPWText.setText(passBook[toSet].getPass());
 		selected = toSet;
+		PassGenWindow.displayRetreive(passBook[toSet]);
 	}
-	public void clear()	{
-		passNameText.setText("");
-		keyPWText.setText("");
-		selected = -1;
+	public static PassWord retreiveSpecific(int toRetreive)	{
+		return passBook[toRetreive];
 	}
-	public void retreive(int retreivePara)	{
-		if (totalPasses <= 0) {
-			this.clear();
-			return;
-		}
+	public static void retreive(int retreivePara)	{
 		switch(retreivePara)	{
 		case 1:
-			this.setCurrent(selected + 1);
+			setCurrent(selected + 1);
 			break;
 		case -1:
-			this.setCurrent(selected - 1);
+			setCurrent(selected - 1);
 			break;
 		case 3:
-			this.setCurrent(totalPasses);
+			setCurrent(totalPasses);
 			break;
 		default:
-			this.setCurrent(0);
+			setCurrent(0);
 			break;
 		}
-		this.printAll();
 	}
-	private void doubleArray()	{
+	private static void doubleArray()	{
 		PassWord[] tempBook = new PassWord[passBook.length*2];
 		for (int i=0; i<totalPasses; ++i) {
 			tempBook[i] = passBook[i];
 		}
-		passBook = tempBook;
+		passBook = tempBook;		
 	}
-	public void addNew()	{ //adds new password object to end of array
-		if (passBook.length >= totalPasses) {
-			this.doubleArray();
-		}
-		if (this.search() == 1)	{
-			outputText.setText("Password name already in use!");
-		}	else if (this.search() == 2)	{
-			outputText.setText("Password already in use!");
-		}
-			else if (passNameText.getText().trim().equals("") || keyPWText.getText().trim().equals(""))	{
-			outputText.setText("Please add a name and generate a password!");
-		}	else	{
-			passBook[totalPasses] = new PassWord(passNameText.getText(), keyPWText.getText());
-			totalPasses++;
-			outputText.setText("New password added sucessfully!");
-			this.exportAll();
-			this.retreive(3);
-		}
+	public static void addNew(PassWord toAdd)	{ //adds new password object to end of array
+		if (passBook.length <= totalPasses) {
+			doubleArray();
+		} 
+		passBook[totalPasses] = toAdd;
+		totalPasses++;
+		exportAll();
+		retreive(3);
 	}
-	public void generateNew()	{
+	public static String generateNew(int passLength)	{
 		String returnString = "";
-		if (keyPWText.getText().equals(""))	{
-			for (int i=0; i<20; i++) {
+			for (int i=0; i<passLength; i++) {
 				returnString += characters.charAt(random.nextInt(characters.length()));
 			}
-			keyPWText.setText(returnString);
-		}	else	{
-			outputText.setText("Please press 'clear' before generating a new password!");
-		}
+		return returnString;
 	}
-	public void remove()	{ //Removes a password object.
-		if (selected >= 0 && selected <= totalPasses) {
+	public static void remove()	{ //Removes a password object and returns the number of removed password
+		if (selected >= 0 && totalPasses > 0) {
 			PassWord[] tempBook = new PassWord[totalPasses];
 			passBook[selected] = null;
 			int j = 0;
@@ -218,28 +157,31 @@ public class PassGenHandler {
 			}
 			passBook = tempBook;
 			--totalPasses;
-			this.retreive(0);
-			this.exportAll();
-		}	else	{
-			outputText.setText("Cannot remove!");
+			retreive(-1);
+			exportAll();
+		}
+		if (totalPasses < 1)	{
+			selected = -1;
+			PassGenWindow.displayRetreive(new PassWord("",""));
 		}
 	}
-	private int search()	{
-		int found = 0;
+	public static int search(PassWord toSearch)	{
+		int found = -1;
 		for (int i=0; i<totalPasses; i++) {
-			if (passBook[i].getName().toUpperCase().equals(passNameText.getText().trim().toUpperCase()))	{
-				found = 1;
-			}	else if (passBook[i].getPass().toUpperCase().equals(keyPWText.getText().trim().toUpperCase())) {
-				found = 2;
+			if (passBook[i].getName().toUpperCase().equals(toSearch.getName().toUpperCase()))	{
+				found = i;
 			}
 		}
 		return found;
 	}
-	private boolean valid()	{
+	public static void overwrite(PassWord toOverwrite, int location)	{
+		passBook[location] = toOverwrite;
+		exportAll();
+	}
+	public static boolean valid(String toCheck)	{
 		Boolean valid = true;
-		String pinCheck = keyPWText.getText().trim();
+		String pinCheck = toCheck.trim();
 		if (pinCheck.equals("") || pinCheck.length() != 4 || pinCheck.contains("0"))	{
-			outputText.setText("Please enter a valid pin.");
 			valid = false;
 		}
 		try	{
@@ -249,7 +191,7 @@ public class PassGenHandler {
 		}
 		return valid;
 	}
-	private String encrypt(String encryptPara)	{
+	private static String encrypt(String encryptPara)	{
 		String encryptedString = "";
 		for (int i=0; i<encryptPara.length();)	{
 			encryptedString += String.valueOf(Character.toChars(encryptPara.charAt(i) + (encrypt2)));
@@ -267,10 +209,10 @@ public class PassGenHandler {
 				i++;
 			}
 		}
-		return this.scramble(encryptedString);
+		return scramble(encryptedString);
 	}
-	private String decrypt(String decryptPara) {
-		String unscrambled = this.scramble(decryptPara);
+	private static String decrypt(String decryptPara) {
+		String unscrambled = scramble(decryptPara);
 		String decryptedString = "";
 		for (int i=0; i<decryptPara.length();)	{
 			decryptedString += String.valueOf(Character.toChars(unscrambled.charAt(i) - (encrypt2)));
@@ -290,7 +232,7 @@ public class PassGenHandler {
 		}
 		return decryptedString;
 	}
-	private String scramble(String scramblePara)	{ //Also unscrambles :D
+	private static String scramble(String scramblePara)	{ //Also unscrambles :D
 		String scrambledString = "";
 		String [] stringChars = scramblePara.split("");
 		int highIndex = (stringChars.length - 1);
@@ -305,5 +247,17 @@ public class PassGenHandler {
 				}
 			}
 		return scrambledString;
+	}
+	private static void addError(String toAdd)	{
+		try {
+			errorWriter = new PrintWriter(new FileWriter("Errors.txt", true));
+			errorDate = new Date();
+			errorWriter.print("Error at: " + errorDate.toString() + System.getProperty("line.separator"));
+			errorWriter.print(toAdd);
+			errorWriter.print(System.getProperty("line.separator"));
+			errorWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
