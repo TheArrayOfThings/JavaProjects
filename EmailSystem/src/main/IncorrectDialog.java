@@ -14,7 +14,6 @@ import org.eclipse.swt.events.MouseEvent;
 
 public class IncorrectDialog extends Dialog {
 
-	protected Object result;
 	protected Shell shlIncorrect;
 
 	public IncorrectDialog(Shell parent, int style) {
@@ -22,7 +21,7 @@ public class IncorrectDialog extends Dialog {
 		setText("SWT Dialog");
 	}
 
-	public Object open() {
+	public void open() {
 		createContents();
 		shlIncorrect.open();
 		shlIncorrect.layout();
@@ -32,7 +31,6 @@ public class IncorrectDialog extends Dialog {
 				display.sleep();
 			}
 		}
-		return result;
 	}
 
 	private void createContents() {

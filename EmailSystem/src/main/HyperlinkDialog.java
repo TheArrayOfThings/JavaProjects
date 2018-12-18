@@ -21,20 +21,11 @@ public class HyperlinkDialog extends Dialog {
 	protected Shell shlEnterHyperlink;
 	private Text txtHyperlink;
 
-	/**
-	 * Create the dialog.
-	 * @param parent
-	 * @param style
-	 */
 	public HyperlinkDialog(Shell parent, int style) {
 		super(parent, style);
-		setText("SWT Dialog");
+		setText("Insert Hyperlink");
 	}
 
-	/**
-	 * Open the dialog.
-	 * @return the result
-	 */
 	public String open() {
 		createContents();
 		shlEnterHyperlink.open();
@@ -48,9 +39,6 @@ public class HyperlinkDialog extends Dialog {
 		return result;
 	}
 
-	/**
-	 * Create contents of the dialog.
-	 */
 	private void createContents() {
 		shlEnterHyperlink = new Shell(getParent(), getStyle());
 		shlEnterHyperlink.setImage(SWTResourceManager.getImage(HyperlinkDialog.class, "/resources/LogoBasic.png"));

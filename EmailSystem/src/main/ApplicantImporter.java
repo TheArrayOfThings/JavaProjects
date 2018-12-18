@@ -9,25 +9,21 @@ import org.apache.poi.ss.usermodel.Sheet;
 //Should contain methods specific to the MailMerger and the import function.
 
 public class ApplicantImporter {
-	private static int nameColumn = -1, studentIDColumn = -1, emailColumn = -1;
-	private static MergeSheet mergeSheet;
-	private static String resultsString = "";
-	private static boolean importSuccess = false;
-	private static int current = 0;
-	public void importApplicants(MergeSheet toCheck)	{
+	private int nameColumn = -1, studentIDColumn = -1, emailColumn = -1;
+	private MergeSheet mergeSheet;
+	private String resultsString = "";
+	private String[] mergeList = new String[] {""};
+	private int current = 0;
+	public String importApplicants(MergeSheet toCheck)	{
 		nameColumn = studentIDColumn = emailColumn = -1;
 		mergeSheet = toCheck;
 		resultsString = "";
-		importSuccess = false;
 		current = 0;
 		emailColumn = mergeSheet.findColumn(new String[] {"email", "e-mail"});
 		studentIDColumn = mergeSheet.findColumn(new String[] {"studentid", "student id", "student-id", "student_id", "studentref", "student ref", "student-ref", "student_ref", "applicantid", "applicant id", "applicant-id", "applicant_id"});
 		nameColumn = mergeSheet.findColumn(new String[] {"fore name", "forename", "fore-name", "fore_name", "first name", "firstname", "first-name", "first_name"});
 		if (emailColumn == -1)	{
-			resultsString = " Fatal Error: No email column found!";
-			EmailWindow.setImportFinished(true);
-			EmailWindow.setError(resultsString);
-			return;
+			return ("Fatal Error: No email column found!");
 		}	else	{
 			resultsString += ("Email is column: " + (emailColumn + 1) + System.getProperty("line.separator"));
 		}
@@ -35,22 +31,18 @@ public class ApplicantImporter {
 			resultsString += ("Student ID is column: " + (studentIDColumn + 1) + System.getProperty("line.separator"));
 		}
 		if (nameColumn == -1)	{
-			resultsString = "Fatal Error: No forename column found!";
-			EmailWindow.setImportFinished(true);
-			EmailWindow.setError(resultsString);
-			return;
+			return "Fatal Error: No forename column found!";
 		}	else	{
 			resultsString += ("Forename is column: " + (nameColumn + 1) + System.getProperty("line.separator"));
 			}
 		resultsString += ("Import successful!" + System.getProperty("line.separator"));
 		resultsString += ("Total applicants: " + (mergeSheet.getTotalRows() - 1) + System.getProperty("line.separator"));
 		resultsString += ("Total columns: " + mergeSheet.getTotalColumns());
-		importSuccess = true;
-		EmailWindow.setMergeList(mergeSheet.getColumnHeaders());
-		EmailWindow.setImportFinished(true);
+		mergeList = toCheck.getColumnHeaders();
+		return resultsString;
 	}
-	public boolean getImportSuccess()	{
-		return importSuccess;
+	public String[] getMergeList()	{
+		return mergeList;
 	}
 	public MergeContact getNext()	{
 		if (current < mergeSheet.getTotalRows() - 1)	{

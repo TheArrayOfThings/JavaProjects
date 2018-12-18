@@ -12,10 +12,14 @@ import java.io.IOException;
 //SheetImporter to take a file and spit out a 'MergeSheet'. SheetImporter should be reusable.
 
 public class SheetImporter {
-	private static Boolean isHidden(Row row){
+	boolean filterError;
+	SheetImporter(boolean filterErrorPara)	{
+		filterError = filterErrorPara;
+	}
+	private  Boolean isHidden(Row row){
 	    return row.getZeroHeight();
 	}
-	private static Boolean filterCheck(Sheet toCheck)	{
+	private Boolean filterCheck(Sheet toCheck)	{
 		for (Row eachRow: toCheck)	{
 			if (isHidden(eachRow))	{
 				return true;
@@ -23,8 +27,7 @@ public class SheetImporter {
 		}
 		return false;
 	}
-	public static MergeSheet importWorkbook(File xlFile, int sheetNumber) throws FilteredSheetException, InvalidFormatException, IOException	{
-		EmailWindow.setImportFinished(false);
+	public MergeSheet importWorkbook(File xlFile, int sheetNumber) throws FilteredSheetException, InvalidFormatException, IOException	{
 			Workbook excelBook = new XSSFWorkbook(xlFile);
 			MergeSheet returnSheet = new MergeSheet(excelBook.getSheetAt(sheetNumber));
 			try	{
@@ -33,7 +36,9 @@ public class SheetImporter {
 				//Do nothing..
 			}
 			if (filterCheck(excelBook.getSheetAt(sheetNumber))) {
-				throw new FilteredSheetException();
+				if (filterError == false)	{
+					throw new FilteredSheetException();
+				}
 			}
 			return returnSheet;
 		}

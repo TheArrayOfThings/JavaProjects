@@ -28,13 +28,7 @@ public class SelectSheet extends Dialog {
 	Listener closeAll;
 	private Label lblMultipleSheetsDetected;
 
-	/**
-	 * Create the dialog.
-	 * @param parent
-	 * @param style
-	 * @throws IOException 
-	 */
-	public SelectSheet(Shell parent, int style, Workbook excelBook) throws IOException {
+	public SelectSheet(Shell parent, int style, Workbook excelBook, MassEmailer windowHandlerPara) throws IOException {
 		super(parent, style);
 		sheetNames = new String[excelBook.getNumberOfSheets()];
 		for (int i = 0; i < excelBook.getNumberOfSheets(); ++i)	{
@@ -43,10 +37,6 @@ public class SelectSheet extends Dialog {
 		setText("SWT Dialog");
 	}
 
-	/**
-	 * Open the dialog.
-	 * @return the result
-	 */
 	public int open() {
 		createContents();
 		shlSelectSheet.open();
@@ -60,9 +50,6 @@ public class SelectSheet extends Dialog {
 		return selectedSheet;
 	}
 
-	/**
-	 * Create contents of the dialog.
-	 */
 	private void createContents() {
 		shlSelectSheet = new Shell(getParent(), getStyle());
 		shlSelectSheet.setImage(SWTResourceManager.getImage(SelectSheet.class, "/resources/LogoBasic.png"));

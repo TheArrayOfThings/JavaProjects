@@ -19,7 +19,7 @@ public class TemplateImport {
 		dialog.setFilterPath("H:\\");
 		return dialog.open();
 	}
-	private static String convertTemplate(String toConvert)	{
+	private String convertTemplate(String toConvert)	{
 		String toReturn;
 		if (toConvert.indexOf("Dear") != 0)	{
 			toReturn = toConvert.substring((toConvert.indexOf("Dear") + 4), toConvert.length());
@@ -54,7 +54,7 @@ public class TemplateImport {
 	//private static String deleteTag(int startIndex, String toParse, String toDelete)	{
 	//	return toParse.substring(startIndex, toParse.indexOf("<" + toDelete)) + toParse.substring((toParse.indexOf(">", toParse.indexOf("<" + toDelete)) + 1), toParse.length());
 	//}
-	private static String nulifyLastTag(String toParse, String toDelete)	{
+	private String nulifyLastTag(String toParse, String toDelete)	{
 		int position = toParse.lastIndexOf(toDelete);
 		if (position >= 0)	{
 			return new StringBuilder(toParse).replace(position, position + toDelete.length(),"<a").toString();
@@ -62,7 +62,7 @@ public class TemplateImport {
 			return toParse;
 		}
 	}
-	public static String importTemplate(Shell mainShell)	{
+	public String importTemplate(Shell mainShell)	{
 		String toImport = selectTemplate(mainShell);
 		if (toImport != null) {
 			File msgFile, orgFile = new File(toImport);
@@ -75,9 +75,6 @@ public class TemplateImport {
 			MsgParser messageParser = new MsgParser();
 			try {
 				String toReturn = messageParser.parseMsg(msgFile).getBodyHTML();
-				if (messageParser.parseMsg(msgFile).getAttachments().size() > 0)	{
-					EmailWindow.writeConsole("Attachment detected in template - please add this manually!");
-				}
 				if (toImport.endsWith(".oft"))	{
 					msgFile.renameTo(new File(toImport));
 				}	else	{
