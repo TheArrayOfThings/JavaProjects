@@ -19,24 +19,29 @@ public class ApplicantImporter {
 		mergeSheet = toCheck;
 		resultsString = "";
 		current = 0;
-		emailColumn = mergeSheet.findColumn(new String[] {"email", "e-mail"});
-		studentIDColumn = mergeSheet.findColumn(new String[] {"studentid", "student id", "student-id", "student_id", "studentref", "student ref", "student-ref", "student_ref", "applicantid", "applicant id", "applicant-id", "applicant_id"});
-		nameColumn = mergeSheet.findColumn(new String[] {"fore name", "forename", "fore-name", "fore_name", "first name", "firstname", "first-name", "first_name"});
+		emailColumn = mergeSheet.findFirstColumn(new String[] {"email", "e-mail"});
+		studentIDColumn = mergeSheet.findFirstColumn(new String[] {" id", "-id", "_id", "ref", " ref", "-ref", "_ref", "reference"});
+		nameColumn = mergeSheet.findFirstColumn(new String[] {"fore name", "forename", "fore-name", "fore_name", "first name", "firstname", "first-name", "first_name"});
 		if (emailColumn == -1)	{
 			return ("Fatal Error: No email column found!");
 		}	else	{
 			resultsString += ("Email is column: " + (emailColumn + 1) + System.getProperty("line.separator"));
 		}
 		if (studentIDColumn != -1)	{
-			resultsString += ("Student ID is column: " + (studentIDColumn + 1) + System.getProperty("line.separator"));
+			resultsString += ("Reference number is column: " + (studentIDColumn + 1) + System.getProperty("line.separator"));
 		}
 		if (nameColumn == -1)	{
-			return "Fatal Error: No forename column found!";
+			nameColumn = mergeSheet.findExactColumn(new String[] {"name"});
+			if (nameColumn == -1)	{
+				return "Fatal Error: No forename column found!";
+			}	else	{
+				resultsString += ("Forename is column: " + (nameColumn + 1) + System.getProperty("line.separator"));
+			}
 		}	else	{
 			resultsString += ("Forename is column: " + (nameColumn + 1) + System.getProperty("line.separator"));
 			}
 		resultsString += ("Import successful!" + System.getProperty("line.separator"));
-		resultsString += ("Total applicants: " + (mergeSheet.getTotalRows() - 1) + System.getProperty("line.separator"));
+		resultsString += ("Total recipients: " + (mergeSheet.getTotalRows() - 1) + System.getProperty("line.separator"));
 		resultsString += ("Total columns: " + mergeSheet.getTotalColumns());
 		mergeList = toCheck.getColumnHeaders();
 		return resultsString;

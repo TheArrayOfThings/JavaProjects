@@ -74,9 +74,9 @@ public class LoginDialog extends Dialog {
 
 	private void createContents() {
 		shlLogin = new Shell(getParent(), getStyle());
+		shlLogin.setSize(450, 170);
 		shlLogin.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlLogin.setImage(SWTResourceManager.getImage(LoginDialog.class, "/resources/LogoBasic.png"));
-		shlLogin.setSize(450, 184);
 		shlLogin.setText("Login");
 		shlLogin.setLayout(new GridLayout(2, false));
 		shlLogin.addListener(SWT.Close, new Listener()	{
@@ -91,7 +91,7 @@ public class LoginDialog extends Dialog {
 		
 		lblPleaseEnterYour = new Label(shlLogin, SWT.BORDER);
 		lblPleaseEnterYour.setAlignment(SWT.CENTER);
-		GridData gd_lblPleaseEnterYour = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 2);
+		GridData gd_lblPleaseEnterYour = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2);
 		gd_lblPleaseEnterYour.heightHint = 52;
 		lblPleaseEnterYour.setLayoutData(gd_lblPleaseEnterYour);
 		lblPleaseEnterYour.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));

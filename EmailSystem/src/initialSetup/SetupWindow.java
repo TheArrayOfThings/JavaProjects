@@ -56,9 +56,9 @@ public class SetupWindow extends Dialog {
 
 	private void createContents() {
 		shlConfirm = new Shell(getParent(), getStyle());
+		shlConfirm.setSize(800, 301);
 		shlConfirm.setImage(SWTResourceManager.getImage(SetupWindow.class, "/resources/LogoBasic.png"));
 		shlConfirm.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlConfirm.setSize(800, 299);
 		shlConfirm.setText("Setup");
 		shlConfirm.setLayout(new GridLayout(6, false));
 		shlConfirm.addListener(SWT.Close, new Listener()	{
@@ -125,7 +125,7 @@ public class SetupWindow extends Dialog {
 		lblSignature.setText("Signature");
 		
 		txtSignature = new Text(shlConfirm, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		GridData gd_txtSignature = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		GridData gd_txtSignature = new GridData(SWT.FILL, SWT.CENTER, true, true, 2, 1);
 		gd_txtSignature.widthHint = 372;
 		gd_txtSignature.heightHint = 123;
 		txtSignature.setLayoutData(gd_txtSignature);
@@ -149,12 +149,6 @@ public class SetupWindow extends Dialog {
 					}
 				}
 			});
-		new Label(shlConfirm, SWT.NONE);
-		new Label(shlConfirm, SWT.NONE);
-		new Label(shlConfirm, SWT.NONE);
-		new Label(shlConfirm, SWT.NONE);
-		new Label(shlConfirm, SWT.NONE);
-		new Label(shlConfirm, SWT.NONE);
 		new Label(shlConfirm, SWT.NONE);
 		
 		new TextMenu(txtSignature).addMainMenu(new String[]{"Sending_Name", "Job_Title", "Sending_Inbox"});

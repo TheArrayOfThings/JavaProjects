@@ -41,16 +41,16 @@ public class HyperlinkDialog extends Dialog {
 
 	private void createContents() {
 		shlEnterHyperlink = new Shell(getParent(), getStyle());
+		shlEnterHyperlink.setSize(450, 126);
 		shlEnterHyperlink.setImage(SWTResourceManager.getImage(HyperlinkDialog.class, "/resources/LogoBasic.png"));
 		shlEnterHyperlink.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlEnterHyperlink.setSize(450, 180);
 		shlEnterHyperlink.setText("Enter Hyperlink");
 		shlEnterHyperlink.setLayout(new GridLayout(2, false));
 		
 		Label lblInstructions = new Label(shlEnterHyperlink, SWT.BORDER);
 		lblInstructions.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		lblInstructions.setAlignment(SWT.CENTER);
-		GridData gd_lblInstructions = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		GridData gd_lblInstructions = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gd_lblInstructions.heightHint = 107;
 		gd_lblInstructions.widthHint = 435;
 		lblInstructions.setLayoutData(gd_lblInstructions);

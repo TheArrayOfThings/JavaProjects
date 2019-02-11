@@ -24,11 +24,23 @@ public class MergeSheet {
 	public String[] getColumnHeaders()	{
 		return columnHeaders;
 	}
-	public int findColumn(String[] searchStrings)	{
+	public int findFirstColumn(String[] searchStrings)	{
 		int columnIndex = 0;
 		for (String headerString: columnHeaders)	{
 			for (String eachSearch: searchStrings)	{
 				if (headerString.trim().toLowerCase().contains(eachSearch.trim().toLowerCase()))	{
+					return columnIndex;
+				}
+			}
+			++columnIndex;
+		}
+		return -1;
+	}
+	public int findExactColumn(String[] searchStrings)	{
+		int columnIndex = 0;
+		for (String headerString: columnHeaders)	{
+			for (String eachSearch: searchStrings)	{
+				if (headerString.trim().toLowerCase().equals(eachSearch.trim().toLowerCase()))	{
 					return columnIndex;
 				}
 			}

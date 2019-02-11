@@ -7,6 +7,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import settings.SettingsDialog;
+
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
@@ -43,27 +45,26 @@ public class EmailWindow {
 	private static Label lblInbox;
 	private static Label lblAttachment;
 	private static StyledText txtSystem;
-	private static Button btnAddStudentId;
 	private static Combo comboDropDownIS;
 	private static Combo comboAttach;
 	private static Shell shell = new Shell();
 	private static String dLine = System.getProperty("line.separator") + System.getProperty("line.separator");
 	private static Button btnSetup;
-	private static Button btnFilter;
+	private static Button btnSettings;
 
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
 		MassEmailer emailer = new MassEmailer(shell);
+			shell.setSize(901, 592);
 			shell.setImage(SWTResourceManager.getImage(EmailWindow.class, "/resources/LogoBasic.png"));
 			shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_LIST_BACKGROUND));
-			shell.setSize(790, 600);
 			shell.setText("Ryan's MailMerger");
 			shell.addListener(SWT.Close, new Listener()	{
 				public void handleEvent(Event event) {
 					emailer.shutDown();
 					}
 				});
-			shell.setLayout(new GridLayout(13, false));
+			shell.setLayout(new GridLayout(11, false));
 			lblDear = new Label(shell, SWT.NONE);
 			lblDear.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 			lblDear.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -76,6 +77,7 @@ public class EmailWindow {
 			txtName.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 			
 			btnPrevious = new Button(shell, SWT.NONE);
+			btnPrevious.setToolTipText("Selects the previous recipient");
 			btnPrevious.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
@@ -90,6 +92,7 @@ public class EmailWindow {
 			btnPrevious.setText("<");
 			
 			btnNext = new Button(shell, SWT.NONE);
+			btnNext.setToolTipText("Selects the next recipient");
 			btnNext.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
@@ -110,12 +113,12 @@ public class EmailWindow {
 			lblInbox.setText("Inbox");
 			
 			comboDropDownIS = new Combo(shell, SWT.READ_ONLY);
-			comboDropDownIS.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 5, 1));
+			comboDropDownIS.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 			
 			lblStudentId = new Label(shell, SWT.NONE);
 			lblStudentId.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 			lblStudentId.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			lblStudentId.setText("Student ID ");
+			lblStudentId.setText("Reference");
 			
 			txtSID = new Text(shell, SWT.BORDER | SWT.READ_ONLY);
 			txtSID.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
@@ -130,7 +133,7 @@ public class EmailWindow {
 			lblAttachment.setText("Attachments");
 			
 			comboAttach = new Combo(shell, SWT.READ_ONLY);
-			GridData gd_comboAttach = new GridData(SWT.FILL, SWT.FILL, true, false, 5, 1);
+			GridData gd_comboAttach = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
 			gd_comboAttach.widthHint = 109;
 			comboAttach.setLayoutData(gd_comboAttach);
 			
@@ -142,11 +145,24 @@ public class EmailWindow {
 			txtEmail = new Text(shell, SWT.BORDER | SWT.READ_ONLY);
 			txtEmail.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 			txtEmail.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
-			new Label(shell, SWT.NONE);
-			new Label(shell, SWT.NONE);
+			
+			btnClear = new Button(shell, SWT.NONE);
+			btnClear.setToolTipText("Clears the subject & body above");
+			GridData gd_btnClear = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
+			gd_btnClear.widthHint = 59;
+			btnClear.setLayoutData(gd_btnClear);
+			btnClear.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					txtMain.setText("");
+					txtSubject.setText("");
+				}
+			});
+			btnClear.setText("Clear");
 			new Label(shell, SWT.NONE);
 			
 			btnAddAttachment = new Button(shell, SWT.NONE);
+			btnAddAttachment.setToolTipText("Adds an attachment");
 			GridData gd_btnAddAttachment = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 			gd_btnAddAttachment.widthHint = 64;
 			btnAddAttachment.setLayoutData(gd_btnAddAttachment);
@@ -170,7 +186,8 @@ public class EmailWindow {
 			btnAddAttachment.setText("Add");
 			
 			btnRemoveAttachment = new Button(shell, SWT.NONE);
-			GridData gd_btnRemoveAttachment = new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1);
+			btnRemoveAttachment.setToolTipText("Removes the currently selected attachment");
+			GridData gd_btnRemoveAttachment = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 			gd_btnRemoveAttachment.widthHint = 69;
 			btnRemoveAttachment.setLayoutData(gd_btnRemoveAttachment);
 			btnRemoveAttachment.addMouseListener(new MouseAdapter() {
@@ -197,11 +214,11 @@ public class EmailWindow {
 			txtSystem = new StyledText(shell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 			txtSystem.setAlignment(SWT.CENTER);
 			txtSystem.setTopMargin(10);
-			txtSystem.setText("Welcome to Ryan's MailMerger!\r\n\r\n1):  Import your data using the 'Import' button.\r\n\r\n2): Add a subject and complete the body.\r\n\r\n3): Preview before sending!\r\n\r\n**'Dear [name]' is automatically added!**\r\n\r\n**'Student ID: [Student ID]' is automatically added!**\r\n\r\n**Your signature is automatically added!**\r\n\r\n");
+			txtSystem.setText("Welcome to Ryan's MailMerger!\r\n\r\n1):  Import your recipient data using the 'Import' button.\r\n\r\n2): Add a subject and complete the body.\r\n\r\n3): Preview before sending!\r\n\r\n**'Dear [name]' is automatically added!**\r\n\r\n**A signature is automatically added!**\r\n\r\n");
 			txtSystem.setForeground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 			txtSystem.setFont(SWTResourceManager.getFont("Calibri", 11, SWT.NORMAL));
 			txtSystem.setBackground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-			GridData gd_txtSystem = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 2);
+			GridData gd_txtSystem = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 2);
 			gd_txtSystem.widthHint = 389;
 			txtSystem.setLayoutData(gd_txtSystem);
 			txtSystem.addListener(SWT.Modify, new Listener(){
@@ -218,6 +235,7 @@ public class EmailWindow {
 			txtMain.setText("[Replace with body of email]");
 			
 			btnImport = new Button(shell, SWT.NONE);
+			btnImport.setToolTipText("Imports a spreadsheet of recipients");
 			btnImport.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 			btnImport.addMouseListener(new MouseAdapter() {
 				@Override
@@ -249,13 +267,6 @@ public class EmailWindow {
 											if(emailer.getImportSuccess())	{ //Import successful!
 												setContact(emailer.getNext());
 												emailer.addMenus(txtSubject, txtMain);
-												if (emailer.getIdFound())	{
-													btnAddStudentId.setEnabled(true);
-													btnAddStudentId.setSelection(true);
-												}	else	{
-													btnAddStudentId.setEnabled(false);
-													btnAddStudentId.setSelection(false);
-												}
 											}	else	{
 												txtName.setText("");
 												txtEmail.setText("");
@@ -278,6 +289,7 @@ public class EmailWindow {
 			btnImport.setText("Import");
 			
 			btnPreview = new Button(shell, SWT.NONE);
+			btnPreview.setToolTipText("Produces a preview of the email using the current recipient's details");
 			GridData gd_btnPreview = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 			gd_btnPreview.widthHint = 57;
 			btnPreview.setLayoutData(gd_btnPreview);
@@ -294,6 +306,7 @@ public class EmailWindow {
 			btnPreview.setText("Preview");
 			
 			btnSend = new Button(shell, SWT.NONE);
+			btnSend.setToolTipText("Sends the emails");
 			GridData gd_btnSend = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 			gd_btnSend.widthHint = 58;
 			btnSend.setLayoutData(gd_btnSend);
@@ -346,24 +359,13 @@ public class EmailWindow {
 				}
 			});
 			btnSend.setText("Send");
-			
-			btnClear = new Button(shell, SWT.NONE);
-			GridData gd_btnClear = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-			gd_btnClear.widthHint = 59;
-			btnClear.setLayoutData(gd_btnClear);
-			btnClear.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseDown(MouseEvent e) {
-					txtMain.setText("");
-					txtSubject.setText("");
-				}
-			});
-			btnClear.setText("Clear");
+			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			new Label(shell, SWT.NONE);
 			
 			btnImportoft = new Button(shell, SWT.NONE);
+			btnImportoft.setToolTipText("Imports a .msg or .oft template into the MailMerger");
 			GridData gd_btnImportoft = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 			gd_btnImportoft.widthHint = 65;
 			btnImportoft.setLayoutData(gd_btnImportoft);
@@ -385,6 +387,7 @@ public class EmailWindow {
 			btnImportoft.setText("Template");
 			
 			btnSetup = new Button(shell, SWT.NONE);
+			btnSetup.setToolTipText("Re-triggers the inital setup");
 			btnSetup.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseDown(MouseEvent e) {
@@ -400,44 +403,22 @@ public class EmailWindow {
 			gd_btnSetup.widthHint = 72;
 			btnSetup.setLayoutData(gd_btnSetup);
 			btnSetup.setText("Setup");
+			
+			btnSettings = new Button(shell, SWT.NONE);
+			btnSettings.setToolTipText("Opens the settings menu");
+			GridData gd_btnSettings = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+			gd_btnSettings.widthHint = 63;
+			btnSettings.setLayoutData(gd_btnSettings);
+			btnSettings.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseUp(MouseEvent e) {
+					SettingsDialog settingsDialog = new SettingsDialog(shell, SWT.CLOSE | SWT.APPLICATION_MODAL);
+					settingsDialog.open();
+					emailer.setSettings();
+				}
+			});
+			btnSettings.setText("Settings");
 			new Label(shell, SWT.NONE);
-			
-			btnFilter = new Button(shell, SWT.CHECK);
-			btnFilter.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 2, 1));
-			btnFilter.setToolTipText("If this is selected, the program will not block the user from importing a filtered sheet.");
-			btnFilter.setText("Ignore Filters?");
-			btnFilter.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			btnFilter.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseUp(MouseEvent e) {
-					if (emailer.getFilterError() == true) {
-						btnFilter.setSelection(false);
-						emailer.setFilterError(false);
-					}	else	{
-						btnFilter.setSelection(true);
-						emailer.setFilterError(true);
-					}
-				}
-			});
-			
-			btnAddStudentId = new Button(shell, SWT.CHECK);
-			btnAddStudentId.setToolTipText("If this is selected, the program will automatically add ' - Student ID ([ID Number])' to the end of the subject.");
-			btnAddStudentId.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-			btnAddStudentId.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseUp(MouseEvent e) {
-					if (emailer.getAutoAdd() == true) {
-						btnAddStudentId.setSelection(false);
-						emailer.setAutoAdd(false);
-					}	else	{
-						btnAddStudentId.setSelection(true);
-						emailer.setAutoAdd(true);
-					}
-				}
-			});
-			btnAddStudentId.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-			btnAddStudentId.setText("Add Student IDs?");
-			btnAddStudentId.setEnabled(false);
 			
 			if (!(shell.isDisposed()))	{
 				shell.open();
@@ -445,6 +426,7 @@ public class EmailWindow {
 				emailer.initialise(txtSubject, txtMain);
 				setInboxes(comboDropDownIS, emailer.getInboxes());
 				comboDropDownIS.add(emailer.getPersonal());
+				emailer.setSettings();
 			}
 			
 			if (!(emailer.getLoginSuccess()))	{
@@ -484,6 +466,7 @@ public class EmailWindow {
 		btnClear.setEnabled(toSet);
 		btnImportoft.setEnabled(toSet);
 		btnSetup.setEnabled(toSet);
+		btnSettings.setEnabled(toSet);
 	}
 	public static void setInboxes(Combo inboxDropdown, String [] toAdd)	{
 		for (String eachString: toAdd)	{

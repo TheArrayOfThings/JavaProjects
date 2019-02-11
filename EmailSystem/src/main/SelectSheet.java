@@ -52,9 +52,9 @@ public class SelectSheet extends Dialog {
 
 	private void createContents() {
 		shlSelectSheet = new Shell(getParent(), getStyle());
+		shlSelectSheet.setSize(241, 142);
 		shlSelectSheet.setImage(SWTResourceManager.getImage(SelectSheet.class, "/resources/LogoBasic.png"));
 		shlSelectSheet.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlSelectSheet.setSize(241, 138);
 		shlSelectSheet.setText("Select Sheet");
 		shlSelectSheet.setLayout(new GridLayout(1, false));
 		closeAll = new Listener() {
@@ -67,7 +67,7 @@ public class SelectSheet extends Dialog {
 		lblMultipleSheetsDetected = new Label(shlSelectSheet, SWT.BORDER | SWT.CENTER);
 		lblMultipleSheetsDetected.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
 		lblMultipleSheetsDetected.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
-		GridData gd_lblMultipleSheetsDetected = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+		GridData gd_lblMultipleSheetsDetected = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_lblMultipleSheetsDetected.widthHint = 223;
 		gd_lblMultipleSheetsDetected.heightHint = 40;
 		lblMultipleSheetsDetected.setLayoutData(gd_lblMultipleSheetsDetected);

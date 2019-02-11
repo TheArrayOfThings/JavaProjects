@@ -35,15 +35,15 @@ public class IncorrectDialog extends Dialog {
 
 	private void createContents() {
 		shlIncorrect = new Shell(getParent(), getStyle());
+		shlIncorrect.setSize(462, 135);
 		shlIncorrect.setImage(SWTResourceManager.getImage(IncorrectDialog.class, "/resources/LogoBasic.png"));
 		shlIncorrect.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlIncorrect.setSize(462, 139);
 		shlIncorrect.setText("Incorrect!");
 		shlIncorrect.setLayout(new GridLayout(1, false));
 		
 		Label lblLoginCredentialsIncorrect = new Label(shlIncorrect, SWT.BORDER);
 		lblLoginCredentialsIncorrect.setAlignment(SWT.CENTER);
-		GridData gd_lblLoginCredentialsIncorrect = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_lblLoginCredentialsIncorrect = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
 		gd_lblLoginCredentialsIncorrect.heightHint = 63;
 		lblLoginCredentialsIncorrect.setLayoutData(gd_lblLoginCredentialsIncorrect);
 		lblLoginCredentialsIncorrect.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));

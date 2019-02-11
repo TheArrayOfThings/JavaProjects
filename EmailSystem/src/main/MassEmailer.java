@@ -47,12 +47,13 @@ import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.Mailbox;
 import microsoft.exchange.webservices.data.property.complex.MessageBody;
+import settings.SettingsHandler;
 
 public class MassEmailer {
 	private String inbox = "", emailBody = "", subject = "", importSignature = "", loginEmail = "", results = "";
 	private String[] mergeList = new String[] {""};
 	private String[] inboxes = new String[] {""};
-	private boolean sentFinished = false, importSuccess = false, autoAdd = false, filterError = false, importFinished = false, loginSuccess;
+	private boolean sentFinished = false, importSuccess = false, /*autoAdd = false, *//*filterError = false,*/ importFinished = false, loginSuccess;
 	private ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 	private ApplicantImporter importedApplicants = new ApplicantImporter();
 	private ScheduledExecutorService refreshService;
@@ -61,6 +62,7 @@ public class MassEmailer {
 	private SheetImporter sheetImporter;
 	private String dLine = System.getProperty("line.separator") + System.getProperty("line.separator");
 	private User_Details userDetails = new User_Details();
+	private SettingsHandler mainSettings;
 	private Shell mainShell;
 	MassEmailer(Shell mainShellPara)	{
 		mainShell = mainShellPara;
@@ -94,6 +96,9 @@ public class MassEmailer {
 				loginSuccess = true;
 			}
 		}
+	}
+	public void setSettings()	{
+		mainSettings = new SettingsHandler();
 	}
 	public String[] getInboxes()	{
 		return inboxes;
@@ -154,7 +159,7 @@ public class MassEmailer {
 				try {
 					importSuccess = false;
 					importFinished = false;
-					sheetImporter = new SheetImporter(filterError);
+					sheetImporter = new SheetImporter(mainSettings.getSetting("Ignore Filters?"));
 					String results = importedApplicants.importApplicants(sheetImporter.importWorkbook(xlFile, sheetNumber));
 					if (results.startsWith("Fatal Error"))	{
 						importFailed(results);
@@ -187,11 +192,6 @@ public class MassEmailer {
 		results = resultsPara;
 		importSuccess = true;
 		importFinished = true;
-		if (importedApplicants.getIdFound()) {
-			autoAdd = true;
-		}	else	{
-			autoAdd = false;
-		}
 	}
 	public void refreshDisplay(Runnable toRefresh)	{
 	 Runnable runRefresh = new Runnable() {
@@ -211,17 +211,27 @@ public class MassEmailer {
 		String thisBody = emailBody, thisSubject = subject;
 		if (importSuccess)	{
 			for (int i = 0; i < importedApplicants.getMergeSheet().getTotalColumns(); ++i) {
-				try	{
-					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), importedApplicants.getMainSheet().getRow(current).getCell(i).getStringCellValue());
-					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), importedApplicants.getMainSheet().getRow(current).getCell(i).getStringCellValue());
-				}	catch (IllegalStateException e)	{
-					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), String.valueOf(Math.round(importedApplicants.getMainSheet().getRow(current).getCell(i).getNumericCellValue())));
-					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), String.valueOf(Math.round(importedApplicants.getMainSheet().getRow(current).getCell(i).getNumericCellValue())));
-				}	catch (NullPointerException n)	{
-					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), "");
-					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), "");
-				}	catch (Exception lastResort)	{
-					throw new Exception();
+				if (thisSubject.contains("<<" + mergeList[i] + ">>"))	{
+					try	{
+						thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), importedApplicants.getMainSheet().getRow(current).getCell(i).getStringCellValue());
+					}	catch (IllegalStateException e)	{
+						thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), String.valueOf(Math.round(importedApplicants.getMainSheet().getRow(current).getCell(i).getNumericCellValue())));
+					}	catch (NullPointerException n)	{
+						thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), "");
+					}	catch (Exception lastResort)	{
+						throw new Exception();
+					}
+				}
+				if (thisBody.contains("<<" + mergeList[i] + ">>"))	{
+					try	{
+						thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), importedApplicants.getMainSheet().getRow(current).getCell(i).getStringCellValue());
+					}	catch (IllegalStateException e)	{
+						thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), String.valueOf(Math.round(importedApplicants.getMainSheet().getRow(current).getCell(i).getNumericCellValue())));
+					}	catch (NullPointerException n)	{
+						thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), "");
+					}	catch (Exception lastResort)	{
+						throw new Exception();
+					}
 				}
 			}
 		}
@@ -232,7 +242,9 @@ public class MassEmailer {
 				|| StringUtils.endsWithIgnoreCase(thisBody, "wishes")
 				|| StringUtils.endsWithIgnoreCase(thisBody, "wishes,")
 				|| StringUtils.endsWithIgnoreCase(thisBody, "thanks")
-				|| StringUtils.endsWithIgnoreCase(thisBody, "thanks,")))	{
+				|| StringUtils.endsWithIgnoreCase(thisBody, "thanks,")
+				|| StringUtils.endsWithIgnoreCase(thisBody, "sincerely")
+				|| StringUtils.endsWithIgnoreCase(thisBody, "sincerely,")))	{
 			thisBody += "<br/><br/>Kind regards";
 		}
 		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
@@ -243,11 +255,15 @@ public class MassEmailer {
 				msg.getAttachments().addFileAttachment(eachString);
 			}
 		}
-		if (autoAdd) {
-			if (thisSubject.endsWith("."))	{
-				msg.setSubject(thisSubject.trim() + " Student ID: " + currentContact.getID());
+		if (mainSettings.getSetting("Add Student IDs?")) {
+			if (importedApplicants.getIdFound()) {
+				if (thisSubject.endsWith("."))	{
+					msg.setSubject(thisSubject.trim() + " Student ID: " + currentContact.getID());
+				}	else	{
+					msg.setSubject(thisSubject.trim() + " - Student ID: " + currentContact.getID());
+				}
 			}	else	{
-				msg.setSubject(thisSubject.trim() + " - Student ID: " + currentContact.getID());
+				msg.setSubject(thisSubject.trim());
 			}
 		}	else	{
 			msg.setSubject(thisSubject.trim());
@@ -438,7 +454,7 @@ public class MassEmailer {
 	public boolean getSentFinished()	{
 		return sentFinished;
 	}
-	public void setAutoAdd(boolean toSet)	{
+	/*public void setAutoAdd(boolean toSet)	{
 		autoAdd = toSet;
 	}
 	public void setFilterError(boolean toSet)	{
@@ -449,7 +465,7 @@ public class MassEmailer {
 	}
 	public boolean getFilterError()	{
 		return filterError;
-	}
+	}*/
 	public String killRefresh()	{
 		if(!(refreshService.isShutdown()))	{
 			refreshService.shutdown();

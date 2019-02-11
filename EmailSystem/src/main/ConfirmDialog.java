@@ -38,9 +38,9 @@ public class ConfirmDialog extends Dialog {
 
 	private void createContents() {
 		shlConfirm = new Shell(getParent(), getStyle());
+		shlConfirm.setSize(450, 160);
 		shlConfirm.setImage(SWTResourceManager.getImage(ConfirmDialog.class, "/resources/LogoBasic.png"));
 		shlConfirm.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		shlConfirm.setSize(450, 162);
 		shlConfirm.setText("Confirm?");
 		shlConfirm.setLayout(new GridLayout(2, false));
 		
@@ -48,7 +48,7 @@ public class ConfirmDialog extends Dialog {
 		lblAreYouSure.setFont(SWTResourceManager.getFont("Calibri", 10, SWT.NORMAL));
 		lblAreYouSure.setAlignment(SWT.CENTER);
 		lblAreYouSure.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
-		GridData gd_lblAreYouSure = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		GridData gd_lblAreYouSure = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gd_lblAreYouSure.heightHint = 93;
 		lblAreYouSure.setLayoutData(gd_lblAreYouSure);
 		lblAreYouSure.setText("Are you sure that you want to send?\r\n\r\nIf you click 'Confirm' the program will immediately start sending the emails.\r\n\r\n**Please preview before sending any emails!**");
