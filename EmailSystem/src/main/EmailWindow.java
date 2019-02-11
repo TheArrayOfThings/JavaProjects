@@ -10,7 +10,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import settings.SettingsDialog;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Label;
@@ -249,7 +249,7 @@ public class EmailWindow {
 							writeConsole("Please select a file to import!");
 							}	else	{ //Start import
 								int sheetNumber = 0;
-								Workbook tempBook = new XSSFWorkbook(new File(fileLocation));
+								Workbook tempBook = WorkbookFactory.create(new File(fileLocation));
 								if (tempBook.getNumberOfSheets() > 1)	{
 				    			SelectSheet selectSheet = new SelectSheet(shell, SWT.CLOSE | SWT.SYSTEM_MODAL, tempBook, emailer);
 				    			sheetNumber = selectSheet.open();
@@ -281,6 +281,7 @@ public class EmailWindow {
 								emailer.startImport(fileLocation, sheetNumber);	
 								}
 						}	catch (Exception e1)	{
+							e1.printStackTrace();
 							writeConsole("Catastropic import error: " + e1.toString());
 							emailer.importFailed("Catastropic import error: " + e1.toString());
 							}
@@ -291,7 +292,7 @@ public class EmailWindow {
 			btnPreview = new Button(shell, SWT.NONE);
 			btnPreview.setToolTipText("Produces a preview of the email using the current recipient's details");
 			GridData gd_btnPreview = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-			gd_btnPreview.widthHint = 57;
+			gd_btnPreview.widthHint = 70;
 			btnPreview.setLayoutData(gd_btnPreview);
 			btnPreview.addMouseListener(new MouseAdapter() {
 				@Override
@@ -308,7 +309,7 @@ public class EmailWindow {
 			btnSend = new Button(shell, SWT.NONE);
 			btnSend.setToolTipText("Sends the emails");
 			GridData gd_btnSend = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-			gd_btnSend.widthHint = 58;
+			gd_btnSend.widthHint = 76;
 			btnSend.setLayoutData(gd_btnSend);
 			btnSend.addMouseListener(new MouseAdapter() {
 				@Override

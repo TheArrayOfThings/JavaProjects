@@ -35,7 +35,7 @@ public class IncorrectDialog extends Dialog {
 
 	private void createContents() {
 		shlIncorrect = new Shell(getParent(), getStyle());
-		shlIncorrect.setSize(462, 135);
+		shlIncorrect.setSize(600, 180);
 		shlIncorrect.setImage(SWTResourceManager.getImage(IncorrectDialog.class, "/resources/LogoBasic.png"));
 		shlIncorrect.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlIncorrect.setText("Incorrect!");
@@ -43,7 +43,7 @@ public class IncorrectDialog extends Dialog {
 		
 		Label lblLoginCredentialsIncorrect = new Label(shlIncorrect, SWT.BORDER);
 		lblLoginCredentialsIncorrect.setAlignment(SWT.CENTER);
-		GridData gd_lblLoginCredentialsIncorrect = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		GridData gd_lblLoginCredentialsIncorrect = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		gd_lblLoginCredentialsIncorrect.heightHint = 63;
 		lblLoginCredentialsIncorrect.setLayoutData(gd_lblLoginCredentialsIncorrect);
 		lblLoginCredentialsIncorrect.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
@@ -57,7 +57,7 @@ public class IncorrectDialog extends Dialog {
 				shlIncorrect.close();
 			}
 		});
-		GridData gd_btnOk = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		GridData gd_btnOk = new GridData(SWT.LEFT, SWT.FILL, false, false, 1, 1);
 		gd_btnOk.widthHint = 62;
 		btnOk.setLayoutData(gd_btnOk);
 		btnOk.setText("OK");

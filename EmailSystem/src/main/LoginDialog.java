@@ -74,7 +74,7 @@ public class LoginDialog extends Dialog {
 
 	private void createContents() {
 		shlLogin = new Shell(getParent(), getStyle());
-		shlLogin.setSize(450, 170);
+		shlLogin.setSize(520, 194);
 		shlLogin.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlLogin.setImage(SWTResourceManager.getImage(LoginDialog.class, "/resources/LogoBasic.png"));
 		shlLogin.setText("Login");
@@ -94,7 +94,7 @@ public class LoginDialog extends Dialog {
 		GridData gd_lblPleaseEnterYour = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2);
 		gd_lblPleaseEnterYour.heightHint = 52;
 		lblPleaseEnterYour.setLayoutData(gd_lblPleaseEnterYour);
-		lblPleaseEnterYour.setFont(SWTResourceManager.getFont("PT Sans", 10, SWT.NORMAL));
+		lblPleaseEnterYour.setFont(SWTResourceManager.getFont("Calibri", 10, SWT.NORMAL));
 		lblPleaseEnterYour.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		lblPleaseEnterYour.setText("Please enter your login details\r\n**Please be aware this can take a very long time when first run**");
 		

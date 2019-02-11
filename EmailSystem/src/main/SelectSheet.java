@@ -52,7 +52,7 @@ public class SelectSheet extends Dialog {
 
 	private void createContents() {
 		shlSelectSheet = new Shell(getParent(), getStyle());
-		shlSelectSheet.setSize(241, 142);
+		shlSelectSheet.setSize(241, 190);
 		shlSelectSheet.setImage(SWTResourceManager.getImage(SelectSheet.class, "/resources/LogoBasic.png"));
 		shlSelectSheet.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlSelectSheet.setText("Select Sheet");

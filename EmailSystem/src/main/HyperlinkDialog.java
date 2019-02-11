@@ -41,7 +41,7 @@ public class HyperlinkDialog extends Dialog {
 
 	private void createContents() {
 		shlEnterHyperlink = new Shell(getParent(), getStyle());
-		shlEnterHyperlink.setSize(450, 126);
+		shlEnterHyperlink.setSize(453, 189);
 		shlEnterHyperlink.setImage(SWTResourceManager.getImage(HyperlinkDialog.class, "/resources/LogoBasic.png"));
 		shlEnterHyperlink.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlEnterHyperlink.setText("Enter Hyperlink");

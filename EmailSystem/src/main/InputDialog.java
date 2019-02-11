@@ -44,7 +44,7 @@ public class InputDialog extends Dialog {
 
 	private void createContents() {
 		shlEnter = new Shell(getParent(), getStyle());
-		shlEnter.setSize(450, 88);
+		shlEnter.setSize(540, 120);
 		shlEnter.setText(name);
 		shlEnter.setImage(SWTResourceManager.getImage(InputDialog.class, "/resources/LogoBasic.png"));
 		shlEnter.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -65,7 +65,7 @@ public class InputDialog extends Dialog {
 				}
 			}
 		});
-		txtSubmit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		txtSubmit.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		Button btnSubmit = new Button(shlEnter, SWT.NONE);
 		btnSubmit.addMouseListener(new MouseAdapter() {

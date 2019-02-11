@@ -37,7 +37,7 @@ public class SettingsDialog extends Dialog {
 
 	private void createContents() {
 		shlSettings = new Shell(getParent(), getStyle());
-		shlSettings.setSize(220, 174);
+		shlSettings.setSize(290, 200);
 		shlSettings.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlSettings.setImage(SWTResourceManager.getImage(SettingsDialog.class, "/resources/LogoBasic.png"));
 		shlSettings.setText("Settings");

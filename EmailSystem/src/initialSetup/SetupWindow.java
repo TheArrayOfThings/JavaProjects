@@ -56,7 +56,7 @@ public class SetupWindow extends Dialog {
 
 	private void createContents() {
 		shlConfirm = new Shell(getParent(), getStyle());
-		shlConfirm.setSize(800, 301);
+		shlConfirm.setSize(900, 550);
 		shlConfirm.setImage(SWTResourceManager.getImage(SetupWindow.class, "/resources/LogoBasic.png"));
 		shlConfirm.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		shlConfirm.setText("Setup");
@@ -67,15 +67,11 @@ public class SetupWindow extends Dialog {
 			}
 		});
 		
-		Label lblAreYouSure = new Label(shlConfirm, SWT.BORDER | SWT.WRAP | SWT.CENTER);
-		lblAreYouSure.setFont(SWTResourceManager.getFont("Calibri", 10, SWT.NORMAL));
-		lblAreYouSure.setAlignment(SWT.LEFT);
-		lblAreYouSure.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
-		GridData gd_lblAreYouSure = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 6);
-		gd_lblAreYouSure.widthHint = 383;
-		gd_lblAreYouSure.heightHint = 93;
-		lblAreYouSure.setLayoutData(gd_lblAreYouSure);
-		lblAreYouSure.setText("\r\nWelcome to the MailMerger setup!\r\n\r\nUse the 'Inboxes' section to set the email inboxes that will be available for selection when using the MailMerger;\r\n\r\n   - Click 'Add' to add an inbox\r\n   - Click 'Remove' to remove an inbox\r\n\r\nUse the 'Signature' section to set the signature that will be automatically added to the bottom of each email;\r\n\r\n   - Right click to add merge fields to the signature (such as 'Job Title')\r\n   - The 'Signature' box is HTML compatible \r\n\r\nClick 'Submit' to continue.");
+		lblSignature = new Label(shlConfirm, SWT.BORDER | SWT.SHADOW_IN);
+		lblSignature.setAlignment(SWT.CENTER);
+		lblSignature.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 4, 1));
+		lblSignature.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		lblSignature.setText("Signature");
 		
 		lblInbox = new Label(shlConfirm, SWT.BORDER);
 		lblInbox.setAlignment(SWT.CENTER);
@@ -84,6 +80,14 @@ public class SetupWindow extends Dialog {
 		lblInbox.setLayoutData(gd_lblInbox);
 		lblInbox.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		lblInbox.setText("Inboxes");
+		
+		txtSignature = new Text(shlConfirm, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		GridData gd_txtSignature = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 5);
+		gd_txtSignature.widthHint = 372;
+		gd_txtSignature.heightHint = 241;
+		txtSignature.setLayoutData(gd_txtSignature);
+		
+		new TextMenu(txtSignature).addMainMenu(new String[]{"Sending_Name", "Job_Title", "Sending_Inbox"});
 		
 		comboInboxes = new Combo(shlConfirm, SWT.READ_ONLY);
 		GridData gd_comboInboxes = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
@@ -118,23 +122,22 @@ public class SetupWindow extends Dialog {
 		});
 		btnRemove.setText("Remove");
 		
-		lblSignature = new Label(shlConfirm, SWT.BORDER | SWT.SHADOW_IN);
-		lblSignature.setAlignment(SWT.CENTER);
-		lblSignature.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		lblSignature.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		lblSignature.setText("Signature");
-		
-		txtSignature = new Text(shlConfirm, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		GridData gd_txtSignature = new GridData(SWT.FILL, SWT.CENTER, true, true, 2, 1);
-		gd_txtSignature.widthHint = 372;
-		gd_txtSignature.heightHint = 123;
-		txtSignature.setLayoutData(gd_txtSignature);
+		Label lblAreYouSure = new Label(shlConfirm, SWT.BORDER | SWT.WRAP | SWT.CENTER);
+		lblAreYouSure.setFont(SWTResourceManager.getFont("Calibri", 10, SWT.NORMAL));
+		lblAreYouSure.setAlignment(SWT.LEFT);
+		lblAreYouSure.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
+		GridData gd_lblAreYouSure = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 2);
+		gd_lblAreYouSure.widthHint = 383;
+		gd_lblAreYouSure.heightHint = 93;
+		lblAreYouSure.setLayoutData(gd_lblAreYouSure);
+		lblAreYouSure.setText("\r\nWelcome to the MailMerger setup!\r\n\r\nUse the 'Inboxes' section to set the email inboxes that will be available for selection when using the MailMerger;\r\n\r\n   - Click 'Add' to add an inbox\r\n   - Click 'Remove' to remove an inbox\r\n\r\nUse the 'Signature' section to set the signature that will be automatically added to the bottom of each email;\r\n\r\n   - Right click to add merge fields to the signature (such as 'Job Title')\r\n   - The 'Signature' box is HTML compatible \r\n\r\nClick 'Submit' to continue.");
 		
 		Button btnSubmit = new Button(shlConfirm, SWT.NONE);
 		btnSubmit.setText("Submit");
 		GridData gd_btnSubmit = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 		gd_btnSubmit.widthHint = 58;
 		btnSubmit.setLayoutData(gd_btnSubmit);
+		new Label(shlConfirm, SWT.NONE);
 		btnSubmit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -149,9 +152,6 @@ public class SetupWindow extends Dialog {
 					}
 				}
 			});
-		new Label(shlConfirm, SWT.NONE);
-		
-		new TextMenu(txtSignature).addMainMenu(new String[]{"Sending_Name", "Job_Title", "Sending_Inbox"});
 		
 		if (new File(".//Setup.txt").exists())	{	
 			User_Details importDetails = new User_Details();
