@@ -1,6 +1,7 @@
 package main;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Sheet;
 
 public class MergeSheet {
@@ -14,7 +15,7 @@ public class MergeSheet {
 		totalColumns = mainSheet.getRow(0).getPhysicalNumberOfCells();
 		columnHeaders = new String[totalColumns];
 		for (Cell eachCell: mainSheet.getRow(0)) {
-			columnHeaders[currentColumn] = eachCell.getStringCellValue().trim();
+			columnHeaders[currentColumn] = CellValue.getCellValue(eachCell);
 			++currentColumn;
 		}
 	}

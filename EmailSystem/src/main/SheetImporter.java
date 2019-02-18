@@ -4,7 +4,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class SheetImporter {
 		return false;
 	}
 	public MergeSheet importWorkbook(File xlFile, int sheetNumber) throws FilteredSheetException, InvalidFormatException, IOException	{
-			Workbook excelBook = new XSSFWorkbook(xlFile);
+			Workbook excelBook = WorkbookFactory.create(xlFile);
 			MergeSheet returnSheet = new MergeSheet(excelBook.getSheetAt(sheetNumber));
 			try	{
 				excelBook.close();

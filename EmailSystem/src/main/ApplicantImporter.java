@@ -66,38 +66,13 @@ public class ApplicantImporter {
 	}
 	public MergeContact getSpecific(int toRetreive) {
 		String tempName = "", tempID = "", tempEmail = "";
-		try	{
-			tempName = mergeSheet.getSheet().getRow(toRetreive).getCell(nameColumn).getStringCellValue().toString();
-			} catch (NullPointerException f) {
-				tempName = "";
-				}	catch (IllegalStateException f1) {
-					tempName = String.valueOf(mergeSheet.getSheet().getRow(toRetreive).getCell(nameColumn).getNumericCellValue());
-				}	catch (Exception f2)	{
-					tempName = "";
-				}
+		tempName = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(nameColumn));
 		if (studentIDColumn != -1)	{
-			try	{
-				tempID = String.valueOf(Math.round(mergeSheet.getSheet().getRow(toRetreive).getCell(studentIDColumn).getNumericCellValue()));
-				} catch (NullPointerException n) {
-					tempID = "";
-					}	catch (IllegalStateException n1) {
-						tempID = String.valueOf(mergeSheet.getSheet().getRow(toRetreive).getCell(studentIDColumn).getStringCellValue());
-					}	catch (Exception n2)	{
-						tempID = "";
-					}
-			tempID = tempID.replaceAll("\u00A0", ""); //This removes some spacing that is not UTF-8 compliant
+			tempID = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(studentIDColumn)).replaceAll("\u00A0", ""); //This removes some spacing that is not UTF-8 compliant
 			}	else	{
 				tempID = "";
-			}
-		try	{
-			tempEmail = mergeSheet.getSheet().getRow(toRetreive).getCell(emailColumn).getStringCellValue();
-			} catch (NullPointerException e) {
-				tempEmail = "";
-				}	catch (IllegalStateException e1) {
-					tempEmail = String.valueOf(mergeSheet.getSheet().getRow(toRetreive).getCell(emailColumn).getNumericCellValue());
-				}	catch (Exception e2)	{
-					tempEmail = "";
 				}
+		tempEmail = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(emailColumn));
 		if (!(tempEmail.trim().equals("")))	{
 			try {
 				InternetAddress check = new InternetAddress(tempEmail);

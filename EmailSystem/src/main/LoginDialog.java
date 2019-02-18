@@ -44,7 +44,7 @@ public class LoginDialog extends Dialog {
 	protected Shell shlLogin;
 	private Text txtEmail;
 	private Text txtPW;
-	private String loginEmail = "", results = "";
+	private String loginEmail = "", results = "", emailToCheck = "", pwToCheck = "";
 	private ExchangeService service;
 	private Button btnSubmit;
 	private Label lblEmail, lblPleaseEnterYour, lblPassword;
@@ -143,8 +143,8 @@ public class LoginDialog extends Dialog {
 	private void login()	{
 		error = false;
 		if (!(txtEmail.getText().trim().equals("") || txtPW.getText().trim().equals("")))	{
-			String emailToCheck = txtEmail.getText().trim();
-			String pwToCheck = txtPW.getText().trim();
+			emailToCheck = txtEmail.getText().trim();
+			pwToCheck = txtPW.getText().trim();
 			enable(false);
 			Thread loginThread = new Thread()	{
 				public void run()	{
