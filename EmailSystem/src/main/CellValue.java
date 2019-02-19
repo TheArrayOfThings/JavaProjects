@@ -4,7 +4,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 
 public class CellValue {
-	public static String getCellValue(Cell toGet)	{
+	private static String initialParse(Cell toGet)	{
 		try	{
 			CellType toTest = toGet.getCellType();
 			if (toTest == CellType.NUMERIC)	{
@@ -31,5 +31,12 @@ public class CellValue {
 		}	catch (NullPointerException e)	{
 			return "";
 		}
+	}
+	public static String getCellValue(Cell toGet)	{
+		String toReturn = initialParse(toGet);
+		if (toReturn == null)	{
+			return "";
+		}
+		return toReturn;
 	}
 }

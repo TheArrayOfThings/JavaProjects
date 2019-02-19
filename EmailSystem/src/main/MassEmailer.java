@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Scanner;
@@ -23,13 +22,13 @@ import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Session;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -66,10 +65,18 @@ public class MassEmailer {
 	private User_Details userDetails = new User_Details();
 	private SettingsHandler mainSettings;
 	private Shell mainShell;
-	private SimpleDateFormat format = new SimpleDateFormat("dd-MMMM-yyyy");
 	
 	MassEmailer(Shell mainShellPara)	{
 		mainShell = mainShellPara;
+	}
+	public int getNameCol()	{
+		return importedRecipients.getName();
+	}
+	public int getIDCol()	{
+		return importedRecipients.getID();
+	}
+	public int getEmailCol()	{
+		return importedRecipients.getEmail();
 	}
 	public void initialise(Text subjectText, Text bodyText)	{
 		try {
@@ -120,25 +127,13 @@ public class MassEmailer {
 		new TextMenu(subjectText).addSubjectMenu(mergeList);
 	}
 	public MergeContact getPrevious()	{
-		if (importSuccess) {
-			return importedRecipients.getPrevious();
-		}	else	{
-			return null;
-		}
+		return importedRecipients.getPrevious();
 	}
 	public MergeContact getNext()	{
-		if (importSuccess) {
-			return importedRecipients.getNext();
-		}	else	{
-			return null;
-		}
+		return importedRecipients.getNext();
 	}
 	public MergeContact getCurrent()	{
-		if (importSuccess) {
-			return importedRecipients.getSpecific(importedRecipients.getCurrent());
-		}	else	{
-			return null;
-		}
+		return importedRecipients.getSpecific(importedRecipients.getCurrent());
 	}
 	public void removeAttachment(String toRemove, int index)	{
 		attachList[index] = null;
@@ -174,6 +169,7 @@ public class MassEmailer {
 					} catch (OutOfMemoryError nme)	{
 						importFailed("Java ran out of memory :( Spreadsheet too large : " + nme.toString());
 					}	catch (NullPointerException n)	{
+						n.printStackTrace();
 						importFailed("Error: Selected sheet appears to be blank.");
 					}	catch(FilteredSheetException y)	{
 						importFailed("Filtered sheet error: " + y.toString() + System.getProperty("line.separator") + "Tick 'Ignore Filters?' to suppress this error.");
@@ -213,37 +209,18 @@ public class MassEmailer {
 	}
 	private EmailMessage createEmail(int current) throws Exception	{
 		String thisBody = emailBody, thisSubject = subject;
-		Cell tempCell;
+		EmailMessage msg = new EmailMessage(service);
+		MergeContact currentContact = importedRecipients.getSpecific(current);
 		if (importSuccess)	{
-			for (int i = 0; i < importedRecipients.getMergeSheet().getTotalColumns(); ++i) {
+			for (int i = 0; i < mergeList.length; ++i) {
 				if (thisSubject.contains("<<" + mergeList[i] + ">>"))	{
-					tempCell = importedRecipients.getMainSheet().getRow(current).getCell(i);
-					if (mergeList[i].toLowerCase().contains("date"))	{
-						try	{
-							thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), format.format(tempCell.getDateCellValue()).toString());
-							}	catch (IllegalStateException e) {
-								thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), CellValue.getCellValue(tempCell));
-								}
-						}	else	{
-							thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), CellValue.getCellValue(tempCell));
-							}	
+					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
 					}
 				if (thisBody.contains("<<" + mergeList[i] + ">>"))	{
-					tempCell = importedRecipients.getMainSheet().getRow(current).getCell(i);
-					if (mergeList[i].toLowerCase().contains("date"))	{
-						try	{
-							thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), format.format(tempCell.getDateCellValue()).toString());
-							}	catch (IllegalStateException e) {
-								thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), CellValue.getCellValue(tempCell));
-								}
-						}	else	{
-							thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), CellValue.getCellValue(tempCell));
-							}	
+					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
 					}
 			}
 		}
-		EmailMessage msg = new EmailMessage(service);
-		MergeContact currentContact = importedRecipients.getSpecific(current);
 		if (!(StringUtils.endsWithIgnoreCase(thisBody, "regards") 
 				|| StringUtils.endsWithIgnoreCase(thisBody, "regards,")
 				|| StringUtils.endsWithIgnoreCase(thisBody, "wishes")
@@ -255,7 +232,7 @@ public class MassEmailer {
 			thisBody += "<br/><br/>Kind regards";
 		}
 		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
-				"Dear " + currentContact.getName() + ",<br/><br/>" + 
+				"Dear " + currentContact.getValue(getNameCol()) + ",<br/><br/>" + 
 				thisBody.replaceAll(System.getProperty("line.separator"), "<br/>") + "<br/><br/>" + mergeSignature(importSignature)));
 		for (String eachString: attachList)	{
 			if (eachString != null)	{
@@ -265,9 +242,9 @@ public class MassEmailer {
 		if (mainSettings.getSetting("Add Student IDs?")) {
 			if (importedRecipients.getIdFound()) {
 				if (thisSubject.endsWith("."))	{
-					msg.setSubject(thisSubject.trim() + " Student ID: " + currentContact.getID());
+					msg.setSubject(thisSubject.trim() + " Student ID: " + currentContact.getValue(getIDCol()));
 				}	else	{
-					msg.setSubject(thisSubject.trim() + " - Student ID: " + currentContact.getID());
+					msg.setSubject(thisSubject.trim() + " - Student ID: " + currentContact.getValue(getIDCol()));
 				}
 			}	else	{
 				msg.setSubject(thisSubject.trim());
@@ -275,7 +252,7 @@ public class MassEmailer {
 		}	else	{
 			msg.setSubject(thisSubject.trim());
 		}
-		msg.getToRecipients().add(currentContact.getEmail());
+		msg.getToRecipients().add(currentContact.getValue(getEmailCol()));
 		msg.setFrom(new EmailAddress(inbox));
 		return msg;
 	}
@@ -314,11 +291,24 @@ public class MassEmailer {
 					Mailbox sentBox = new Mailbox(inbox);
 					FolderId sentBoxSentItems = new FolderId(WellKnownFolderName.SentItems, sentBox);
 					FolderId sentBoxDrafts = new FolderId(WellKnownFolderName.Drafts, sentBox);
+					MergeContact currentContact;
+					InternetAddress check;
+					String error = "";
+					EmailMessage message;
 					for (int i = 1; i < total; ++i)	{
-						MergeContact currentContact = importedRecipients.getSpecific(i);
-						if (!(currentContact.getEmail().equals("") || currentContact.getName().equals("") || currentContact.getEmail().trim().equals("INVALID")))	{
+						currentContact = importedRecipients.getSpecific(i);
+							try {
+								check = new InternetAddress(currentContact.getValue(getEmailCol()).trim());
+								check.validate();
+							} catch (AddressException e1) {
+								error = ("Error: " + currentContact.getValue(getNameCol()) + ": " + currentContact.getValue(getIDCol()) + " not emailed. Email address is invalid!") + dLine;
+								results += (error);
+								writeErrors(error);
+								continue;
+							}
+						if (!(currentContact.getValue(getEmailCol()).equals("") || currentContact.getValue(getNameCol()).equals("")))	{
 							try	{
-							EmailMessage message = createEmail(i);
+							message = createEmail(i);
 							message.save(sentBoxDrafts); //Adds many ms with attachments, seemingly unfixable :(
 							message.sendAndSaveCopy(sentBoxSentItems);
 							}	catch(ServiceResponseException | ServiceRequestException | FileNotFoundException e)	{
@@ -333,31 +323,27 @@ public class MassEmailer {
 									sentFinished = true;
 									return;
 								}	else	{
-									String error = "Unknown send error for applicant " + currentContact.getEmail() + ": " + e.toString() + dLine;
+									error = "Unknown send error for applicant " + currentContact.getValue(getEmailCol()) + ": " + e.toString() + dLine;
 										results += (error);
 										writeErrors(error);
 										continue;
 								}
 							}	catch (Exception e1)	{
-								String error = "Unknown send error for applicant " + currentContact.getEmail() + ": " + e1.toString() + dLine;
+								e1.printStackTrace();
+								error = "Unknown send error for applicant " + currentContact.getValue(getEmailCol()) + ": " + e1.toString() + dLine;
 								results += (error);
 								writeErrors(error);
 								continue;
 							}
-						}	else if (currentContact.getEmail().equals("") && currentContact.getName().equals(""))	{
+						}	else if (currentContact.getValue(getEmailCol()).equals("") && currentContact.getValue(getNameCol()).equals(""))	{
 							continue;
-						}	else if(currentContact.getEmail().equals(""))	{
-							String error = ("Error: " + currentContact.getName() + ": " + currentContact.getID() + " not emailed. Email address missing!") + dLine;
+						}	else if(currentContact.getValue(getEmailCol()).equals(""))	{
+							error = ("Error: " + currentContact.getValue(getNameCol()) + ": " + currentContact.getValue(getIDCol()) + " not emailed. Email address missing!") + dLine;
 							results += (error);
 							writeErrors(error);
 							continue;
-							} else if (currentContact.getName().equals(""))	{
-								String error = ("Error: " + currentContact.getEmail() + ": " + currentContact.getID() + " not emailed. Name is missing!") + dLine;
-								results += (error);
-								writeErrors(error);
-								continue;
-							}	else if (currentContact.getEmail().equals("INVALID"))	{
-								String error = ("Error: " + currentContact.getName() + ": " + currentContact.getID() + " not emailed. Email address is invalid!") + dLine;
+							} else if (currentContact.getValue(getNameCol()).equals(""))	{
+								error = ("Error: " + currentContact.getValue(getEmailCol()) + ": " + currentContact.getValue(getIDCol()) + " not emailed. Name is missing!") + dLine;
 								results += (error);
 								writeErrors(error);
 								continue;
@@ -461,18 +447,6 @@ public class MassEmailer {
 	public boolean getSentFinished()	{
 		return sentFinished;
 	}
-	/*public void setAutoAdd(boolean toSet)	{
-		autoAdd = toSet;
-	}
-	public void setFilterError(boolean toSet)	{
-		filterError = toSet;
-	}
-	public boolean getAutoAdd()	{
-		return autoAdd;
-	}
-	public boolean getFilterError()	{
-		return filterError;
-	}*/
 	public String killRefresh()	{
 		if(!(refreshService.isShutdown()))	{
 			refreshService.shutdown();

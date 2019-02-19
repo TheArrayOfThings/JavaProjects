@@ -1,22 +1,41 @@
 package main;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
+import java.text.SimpleDateFormat;
+
 import org.apache.poi.ss.usermodel.Sheet;
 
 public class MergeSheet {
 	private String[] columnHeaders;
 	private int totalRows = 0, totalColumns = 0;
-	private Sheet mainSheet;
+	private MergeContact[] importedRecipients;
+	private SimpleDateFormat format = new SimpleDateFormat("dd/MMMM/yyyy");
 	MergeSheet(Sheet mainSheetPara)	{
 		int currentColumn = 0;
-		mainSheet = mainSheetPara;
-		totalRows = mainSheet.getPhysicalNumberOfRows();
-		totalColumns = mainSheet.getRow(0).getPhysicalNumberOfCells();
+		totalRows = mainSheetPara.getPhysicalNumberOfRows();
+		importedRecipients = new MergeContact[totalRows];
+		totalColumns = mainSheetPara.getRow(0).getPhysicalNumberOfCells();
 		columnHeaders = new String[totalColumns];
-		for (Cell eachCell: mainSheet.getRow(0)) {
-			columnHeaders[currentColumn] = CellValue.getCellValue(eachCell);
+		for (int i = 0; i < totalColumns; ++i) {
+			columnHeaders[currentColumn] = CellValue.getCellValue(mainSheetPara.getRow(0).getCell(i));
 			++currentColumn;
+		}
+		for (int i = 1; i < totalRows; ++i)	{
+			String[] rowData = new String[totalColumns];
+			int current = 0;
+			for (int c = 0; c < totalColumns; ++c)	{
+				if (!(columnHeaders[c].toLowerCase().contains("date")))	{
+					rowData[current] = CellValue.getCellValue(mainSheetPara.getRow(i).getCell(c));
+					}	else	{
+						try	{
+							rowData[current] = format.format(mainSheetPara.getRow(i).getCell(c).getDateCellValue()).toString();
+							}	catch (Exception e) {
+								e.printStackTrace();
+								rowData[current] = CellValue.getCellValue(mainSheetPara.getRow(i).getCell(c));
+								}
+					}
+				++current;
+			}
+			importedRecipients[i] = new MergeContact(rowData);
 		}
 	}
 	public String getColumnHeader(int toGet)	{
@@ -55,7 +74,7 @@ public class MergeSheet {
 	public int getTotalColumns()	{
 		return totalColumns;
 	}
-	public Sheet getSheet()	{
-		return mainSheet;
+	public MergeContact getSpecific(int toRetreive) {
+		return importedRecipients[toRetreive];
 	}
 }

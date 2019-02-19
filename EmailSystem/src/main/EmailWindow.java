@@ -82,8 +82,8 @@ public class EmailWindow {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					MergeContact previous = emailer.getPrevious();
-					if (previous != null)	{
-						setContact(previous);
+					if (emailer.getImportSuccess())	{
+						setContact(previous, emailer);
 					}	else	{
 						writeConsole("Error: " + System.getProperty("line.separator") + "Please import applicants first!");
 					}
@@ -97,8 +97,8 @@ public class EmailWindow {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					MergeContact next = emailer.getNext();
-					if (next != null)	{
-						setContact(next);
+					if (emailer.getImportSuccess())	{
+						setContact(next, emailer);
 					}	else	{
 						writeConsole("Error: " + System.getProperty("line.separator") + "Please import applicants first!");
 					}
@@ -251,9 +251,9 @@ public class EmailWindow {
 								int sheetNumber = 0;
 								Workbook tempBook = WorkbookFactory.create(new File(fileLocation));
 								if (tempBook.getNumberOfSheets() > 1)	{
-				    			SelectSheet selectSheet = new SelectSheet(shell, SWT.CLOSE | SWT.SYSTEM_MODAL, tempBook, emailer);
-				    			sheetNumber = selectSheet.open();
-				    			tempBook.close();
+					    			SelectSheet selectSheet = new SelectSheet(shell, SWT.CLOSE | SWT.SYSTEM_MODAL, tempBook, emailer);
+					    			sheetNumber = selectSheet.open();
+					    			tempBook.close();
 				    			}
 								String refreshLog = txtSystem.getText();
 								txtSystem.setText("Importing..." + System.getProperty("line.separator"));
@@ -265,7 +265,7 @@ public class EmailWindow {
 											txtSystem.setText(refreshLog);
 											writeConsole(emailer.killRefresh());
 											if(emailer.getImportSuccess())	{ //Import successful!
-												setContact(emailer.getNext());
+												setContact(emailer.getNext(), emailer);
 												emailer.addMenus(txtSubject, txtMain);
 											}	else	{
 												txtName.setText("");
@@ -344,7 +344,7 @@ public class EmailWindow {
 													}
 											}	else	{
 												txtSystem.setText("Sending to:" + dLine + "Name: " + txtName.getText() + System.getProperty("line.separator") + "Email: " + txtEmail.getText());
-												setContact(emailer.getCurrent());
+												setContact(emailer.getCurrent(), emailer);
 										}
 										}
 									});
@@ -440,10 +440,14 @@ public class EmailWindow {
 				}
 			}
 	}
-	public static void setContact(MergeContact toSet)	{
-		txtName.setText(toSet.getName());
-		txtEmail.setText(toSet.getEmail());
-		txtSID.setText(toSet.getID());
+	public static void setContact(MergeContact toSet, MassEmailer emailer)	{
+		txtName.setText(toSet.getValue(emailer.getNameCol()));
+		txtEmail.setText(toSet.getValue(emailer.getEmailCol()));
+		if (emailer.getIDCol() != -1)	{
+			txtSID.setText(toSet.getValue(emailer.getIDCol()));
+		}	else	{
+			txtSID.setText("");
+		}
 	}
 	public static void writeConsole(String toWrite)	{
 		txtSystem.setText(txtSystem.getText() + toWrite + dLine);

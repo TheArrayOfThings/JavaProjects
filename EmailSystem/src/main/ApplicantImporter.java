@@ -1,27 +1,21 @@
 package main;
 
-
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-import org.apache.poi.ss.usermodel.Sheet;
-
 //Should contain methods specific to the MailMerger and the import function.
 
 public class ApplicantImporter {
 	private int nameColumn = -1, studentIDColumn = -1, emailColumn = -1;
-	private MergeSheet mergeSheet;
 	private String resultsString = "";
 	private String[] mergeList = new String[] {""};
 	private int current = 0;
+	MergeSheet main;
 	public String importApplicants(MergeSheet toCheck)	{
+		main = toCheck;
 		nameColumn = studentIDColumn = emailColumn = -1;
-		mergeSheet = toCheck;
 		resultsString = "";
 		current = 0;
-		emailColumn = mergeSheet.findFirstColumn(new String[] {"email", "e-mail"});
-		studentIDColumn = mergeSheet.findFirstColumn(new String[] {" id", "-id", "_id", "ref", " ref", "-ref", "_ref", "reference"});
-		nameColumn = mergeSheet.findFirstColumn(new String[] {"fore name", "forename", "fore-name", "fore_name", "first name", "firstname", "first-name", "first_name"});
+		emailColumn = main.findFirstColumn(new String[] {"email", "e-mail"});
+		studentIDColumn = main.findFirstColumn(new String[] {" id", "-id", "_id", "ref", " ref", "-ref", "_ref", "reference"});
+		nameColumn = main.findFirstColumn(new String[] {"fore name", "forename", "fore-name", "fore_name", "first name", "firstname", "first-name", "first_name"});
 		if (emailColumn == -1)	{
 			return ("Fatal Error: No email column found!");
 		}	else	{
@@ -31,7 +25,7 @@ public class ApplicantImporter {
 			resultsString += ("Reference number is column: " + (studentIDColumn + 1) + System.getProperty("line.separator"));
 		}
 		if (nameColumn == -1)	{
-			nameColumn = mergeSheet.findExactColumn(new String[] {"name"});
+			nameColumn = main.findExactColumn(new String[] {"name"});
 			if (nameColumn == -1)	{
 				return "Fatal Error: No forename column found!";
 			}	else	{
@@ -41,60 +35,38 @@ public class ApplicantImporter {
 			resultsString += ("Forename is column: " + (nameColumn + 1) + System.getProperty("line.separator"));
 			}
 		resultsString += ("Import successful!" + System.getProperty("line.separator"));
-		resultsString += ("Total recipients: " + (mergeSheet.getTotalRows() - 1) + System.getProperty("line.separator"));
-		resultsString += ("Total columns: " + mergeSheet.getTotalColumns());
-		mergeList = toCheck.getColumnHeaders();
+		resultsString += ("Total recipients: " + (main.getTotalRows() - 1) + System.getProperty("line.separator"));
+		resultsString += ("Total columns: " + main.getTotalColumns());
+		mergeList = main.getColumnHeaders();
 		return resultsString;
 	}
 	public String[] getMergeList()	{
 		return mergeList;
 	}
 	public MergeContact getNext()	{
-		if (current < mergeSheet.getTotalRows() - 1)	{
+		if (current < main.getTotalRows() - 1)	{
 			++current;
 		}
-		return this.getSpecific(current);
+		return main.getSpecific(current);
 	}
 	public MergeContact getPrevious()	{
 		if (current > 1)	{
 			--current;
 		}
-		return this.getSpecific(current);
+		return main.getSpecific(current);
 	}
 	public int getCurrent()	{
 		return current;
 	}
 	public MergeContact getSpecific(int toRetreive) {
-		String tempName = "", tempID = "", tempEmail = "";
-		tempName = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(nameColumn));
-		if (studentIDColumn != -1)	{
-			tempID = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(studentIDColumn)).replaceAll("\u00A0", ""); //This removes some spacing that is not UTF-8 compliant
-			}	else	{
-				tempID = "";
-				}
-		tempEmail = CellValue.getCellValue(mergeSheet.getSheet().getRow(toRetreive).getCell(emailColumn));
-		if (!(tempEmail.trim().equals("")))	{
-			try {
-				InternetAddress check = new InternetAddress(tempEmail);
-				check.validate();
-			} catch (AddressException e1) {
-				tempEmail = "INVALID";
-			}
-		}
 		current = toRetreive;
-		return new MergeContact(tempName, tempID, tempEmail);
+		return main.getSpecific(toRetreive);
 	}
 	public int getTotal()	{
-		return mergeSheet.getTotalRows();
+		return main.getTotalRows();
 	}
 	public String getResults()	{
 		return resultsString;
-	}
-	public Sheet getMainSheet()	{
-		return mergeSheet.getSheet();
-	}
-	public MergeSheet getMergeSheet()	{
-		return mergeSheet;
 	}
 	public boolean getIdFound()	{
 		if (studentIDColumn == -1)	{
@@ -103,5 +75,13 @@ public class ApplicantImporter {
 			return true;
 		}
 	}
-
+	public int getName()	{
+		return nameColumn;
+	}
+	public int getID()	{
+		return studentIDColumn;
+	}
+	public int getEmail()	{
+		return emailColumn;
+	}
 }
