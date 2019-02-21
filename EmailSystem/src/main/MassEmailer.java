@@ -13,6 +13,7 @@ import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -228,6 +229,14 @@ public class MassEmailer {
 		String name = "", reference = "", toEmail = "";
 		if (importSuccess)	{
 			currentContact = importedRecipients.getSpecific(current);
+			for (int i = 0; i < mergeList.length; ++i) {
+				if (thisSubject.contains("<<" + mergeList[i] + ">>"))	{
+					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
+					}
+				if (thisBody.contains("<<" + mergeList[i] + ">>"))	{
+					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
+					}
+			}
 			name = currentContact.getValue(getNameCol());
 			reference = currentContact.getValue(getIDCol());
 			toEmail = currentContact.getValue(getEmailCol());
