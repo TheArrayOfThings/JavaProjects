@@ -13,7 +13,6 @@ import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -210,17 +209,7 @@ public class MassEmailer {
 	private EmailMessage createEmail(int current) throws Exception	{
 		String thisBody = emailBody, thisSubject = subject;
 		EmailMessage msg = new EmailMessage(service);
-		MergeContact currentContact = importedRecipients.getSpecific(current);
-		if (importSuccess)	{
-			for (int i = 0; i < mergeList.length; ++i) {
-				if (thisSubject.contains("<<" + mergeList[i] + ">>"))	{
-					thisSubject = thisSubject.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
-					}
-				if (thisBody.contains("<<" + mergeList[i] + ">>"))	{
-					thisBody = thisBody.replaceAll(Pattern.quote("<<" + mergeList[i] + ">>"), currentContact.getValue(i));
-					}
-			}
-		}
+		MergeContact currentContact;
 		if (!(StringUtils.endsWithIgnoreCase(thisBody, "regards") 
 				|| StringUtils.endsWithIgnoreCase(thisBody, "regards,")
 				|| StringUtils.endsWithIgnoreCase(thisBody, "wishes")
@@ -231,28 +220,33 @@ public class MassEmailer {
 				|| StringUtils.endsWithIgnoreCase(thisBody, "sincerely,")))	{
 			thisBody += "<br/><br/>Kind regards";
 		}
-		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
-				"Dear " + currentContact.getValue(getNameCol()) + ",<br/><br/>" + 
-				thisBody.replaceAll(System.getProperty("line.separator"), "<br/>") + "<br/><br/>" + mergeSignature(importSignature)));
 		for (String eachString: attachList)	{
 			if (eachString != null)	{
 				msg.getAttachments().addFileAttachment(eachString);
 			}
 		}
-		if (mainSettings.getSetting("Add Student IDs?")) {
-			if (importedRecipients.getIdFound()) {
-				if (thisSubject.endsWith("."))	{
-					msg.setSubject(thisSubject.trim() + " Student ID: " + currentContact.getValue(getIDCol()));
+		String name = "", reference = "", toEmail = "";
+		if (importSuccess)	{
+			currentContact = importedRecipients.getSpecific(current);
+			name = currentContact.getValue(getNameCol());
+			reference = currentContact.getValue(getIDCol());
+			toEmail = currentContact.getValue(getEmailCol());
+		}	else	{
+			name = "[NAME]";
+		}
+		if (mainSettings.getSetting("Add Student IDs?") && importedRecipients.getIdFound()) {
+			if (thisSubject.endsWith("."))	{
+				msg.setSubject(thisSubject.trim() + " Student ID: " + reference);
 				}	else	{
-					msg.setSubject(thisSubject.trim() + " - Student ID: " + currentContact.getValue(getIDCol()));
-				}
+					msg.setSubject(thisSubject.trim() + " - Student ID: " + reference);
+					}
 			}	else	{
 				msg.setSubject(thisSubject.trim());
-			}
-		}	else	{
-			msg.setSubject(thisSubject.trim());
-		}
-		msg.getToRecipients().add(currentContact.getValue(getEmailCol()));
+				}
+		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
+					"Dear " + name + ",<br/><br/>" + 
+					thisBody.replaceAll(System.getProperty("line.separator"), "<br/>") + "<br/><br/>" + mergeSignature(importSignature)));
+		msg.getToRecipients().add(toEmail);
 		msg.setFrom(new EmailAddress(inbox));
 		return msg;
 	}
@@ -388,6 +382,7 @@ public class MassEmailer {
 			bos.close();
 			Runtime.getRuntime().exec(new String[] {"rundll32", "url.dll,FileProtocolHandler", output.getAbsolutePath()});
 		}	catch (Exception e) {
+			e.printStackTrace();
 			errorString = "Fatal Preview error: " + e.toString();
 			writeErrors(errorString);
 		}
