@@ -6,7 +6,7 @@ public class MergeContact {
 		data = dataPara;
 	}
 	public String getValue(int toGet)	{
-		if (data[toGet] == null) {
+		if (data[toGet] == null || toGet > data.length) {
 			return "";
 		}
 		return data[toGet];

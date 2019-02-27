@@ -238,20 +238,20 @@ public class MassEmailer {
 					}
 			}
 			name = currentContact.getValue(getNameCol());
-			reference = currentContact.getValue(getIDCol());
+			if (mainSettings.getSetting("Add Student IDs?") && importedRecipients.getIdFound()) {
+				reference = currentContact.getValue(getIDCol());
+				if (thisSubject.endsWith("."))	{
+					msg.setSubject(thisSubject.trim() + " Student ID: " + reference);
+					}	else	{
+						msg.setSubject(thisSubject.trim() + " - Student ID: " + reference);
+						}
+				}	else	{
+					msg.setSubject(thisSubject.trim());
+					}
 			toEmail = currentContact.getValue(getEmailCol());
 		}	else	{
 			name = "[NAME]";
 		}
-		if (mainSettings.getSetting("Add Student IDs?") && importedRecipients.getIdFound()) {
-			if (thisSubject.endsWith("."))	{
-				msg.setSubject(thisSubject.trim() + " Student ID: " + reference);
-				}	else	{
-					msg.setSubject(thisSubject.trim() + " - Student ID: " + reference);
-					}
-			}	else	{
-				msg.setSubject(thisSubject.trim());
-				}
 		msg.setBody(MessageBody.getMessageBodyFromText("<div style='font-family:PT Sans;font-size:13'>" + 
 					"Dear " + name + ",<br/><br/>" + 
 					thisBody.replaceAll(System.getProperty("line.separator"), "<br/>") + "<br/><br/>" + mergeSignature(importSignature)));
@@ -369,7 +369,12 @@ public class MassEmailer {
 			Session session = Session.getDefaultInstance(props);
 			MimeMessage message = new MimeMessage(session);
 			message.setSubject(preview.getSubject().replaceAll("’", "'"), "text/html; charset=UTF-8"); //Occasional Encoding Error
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim()));
+			try {
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim()));
+			} catch (AddressException e1) {
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(""));
+			}
+			
 			if (attachNum > 0)	{
 				BodyPart mainBody = new MimeBodyPart();
 				mainBody.setContent(preview.getBody().toString().replaceAll("’", "'"), "text/html; charset=UTF-8");
